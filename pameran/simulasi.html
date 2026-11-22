@@ -41,7 +41,7 @@
 <div class="hud">
   <div class="brand"><span class="rec"></span><b>RENDER</b><span>simulasi ruang pamer</span></div>
   <div class="tc" id="tc">00:00:00:00</div>
-  <div class="title" id="title"><div><h1>RENDER</h1><p>Simulasi ruang pamer · 12–19 Des 2026</p></div></div>
+  <div class="title" id="title"><div><h1>RENDER</h1><p>Simulasi ruang pamer · 12 karya · 4 kelompok</p></div></div>
   <div class="cap" id="cap"><div class="eb" id="capEb"></div><h2 id="capT"></h2><p id="capS"></p></div>
   <div class="bar"><i id="bar"></i></div>
 </div>
@@ -59,7 +59,7 @@ try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2
 
 const C = { ink: "#0e1018", fg: "#eef0fa", vm: "#ff7a59", mg: "#a58cff", td: "#3fbdf0", green: "#2f9d63", gold: "#f4b740", paper: "#f4f4f0" };
 const FD = '"Unbounded", "Arial Black", sans-serif', FB = '"Plus Jakarta Sans", Arial, sans-serif', FM = '"JetBrains Mono", monospace';
-const DUR = 36, FPS = 30;
+const DUR = 60, FPS = 30;
 
 /* ---------- renderer ---------- */
 const canvas = document.getElementById("c");
@@ -339,12 +339,13 @@ const tvDraws = [
 ];
 const animTex = [];
 const tvZ = [-3.9, -1.3, 1.3, 3.9];
-const labels = [
-  labelTex("Raka P.", "Pagi di Lereng", ["Video iklan · 0:30", "1920×1080"], "#d9472a"),
-  labelTex("Riani P.", "Krispi Box", ["Video iklan · 0:15", "1080×1920"], "#d9472a", true),
-  labelTex("Nadia K.", "Arunika Run", ["Motion · 0:15", "After Effects"], "#6d4fd8"),
-  labelTex("Bima A.", "Botol Embun", ["3D + video · 0:20", "Blender"], "#0f86b8"),
+const BR = [
+  { k: 1, name: "Kopi Lereng", col: "#c8742f" },
+  { k: 2, name: "Krispi Box", col: "#e0402a" },
+  { k: 3, name: "Sepatu Arunika", col: "#7a5cf0" },
+  { k: 4, name: "Embun", col: "#1d97d0" },
 ];
+const labels = BR.map((b, i) => labelTex(`Kelompok ${b.k}`, b.name, ["Video marketing · 0:30", "1920×1080 · stereo"], "#d9472a", i === 1));
 tvZ.forEach((z, i) => {
   const tv = tvScreen(tvDraws[i]); animTex.push(tv);
   box(.06, .76, 1.32, std("#07080d", { metalness: .4, roughness: .3 }), -8.96, 1.55, z);
@@ -366,29 +367,35 @@ box(.12, 3.2, 3.5, partM, 3.6, 1.6, -4.25);
 const curtM = std("#2a2147", { roughness: 1 });
 for (const s of [-1, 1]) for (let i = 0; i < 6; i++) { const c = cyl(.09, .09, 3.1, curtM, s * (3.5 - i * .17), 1.55, -2.5 + (i % 2) * .06, scene, 8); }
 box(7.3, .25, .2, partM, 0, 3.3, -2.5);
-plane(3.2, .4, new THREE.MeshBasicMaterial({ map: signTex("ZONA B · MOTION GRAPHIC", "ruang proyeksi · 4 × 2,25 m", C.mg).t, transparent: true, toneMapped: false }), 0, 3.0, -2.38);
-const proj = tvScreen((g, w, h, t) => {
-  g.fillStyle = "#07080d"; g.fillRect(0, 0, w, h);
-  const cx = w / 2, cy = h / 2;
-  for (let i = 0; i < 4; i++) { const a = t * 1.4 + i * Math.PI / 2; g.fillStyle = [C.mg, C.td, C.vm, C.gold][i]; g.beginPath(); g.arc(cx + Math.cos(a) * 190, cy + Math.sin(a) * 150, 26 + i * 6, 0, 7); g.fill(); }
-  const p = (Math.sin(t * 2) + 1) / 2; g.strokeStyle = C.mg; g.lineWidth = 12; g.beginPath(); g.arc(cx, cy, 70 + p * 30, 0, 7); g.stroke();
-  const words = ["ARUNIKA", "RUN", "LEBIH", "RINGAN"]; const wi = Math.floor(t / .9) % words.length;
-  g.font = `800 92px ${FD}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.fillText(words[wi], cx, cy);
-  for (let i = 0; i < 16; i++) { const bh = 20 + Math.abs(Math.sin(t * 4 + i * .6)) * 80; g.fillStyle = "rgba(165,140,255,.55)"; g.fillRect(60 + i * 18, h - 40 - bh, 12, bh); }
-  g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = `400 20px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("Nadia K. · Arunika Run · 0:15 loop", 40, 50);
-}, 1024, 576);
-animTex.push(proj);
-plane(4, 2.25, basicTex(proj.t), 0, 1.85, -5.98);
-const projector = box(.4, .16, .32, std("#d7dbe6"), 0, 3.25, -1.6);
-cyl(.015, .015, .3, trackM, 0, 3.45, -1.6);
-{ // beam piramida
-  const g = new THREE.BufferGeometry();
-  const p0 = [0, 3.22, -1.75], c = [[-2, 2.975, -5.97], [2, 2.975, -5.97], [2, .725, -5.97], [-2, .725, -5.97]];
-  const v = []; for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; v.push(...p0, ...a, ...b); }
-  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.computeVertexNormals();
-  const beam = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: "#c9bfff", transparent: true, opacity: .07, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
-  scene.add(beam);
-}
+plane(3.2, .4, new THREE.MeshBasicMaterial({ map: signTex("ZONA B · MOTION GRAPHIC", "4 layar proyeksi · kelompok 1–4", C.mg).t, transparent: true, toneMapped: false }), 0, 3.0, -2.38);
+const mgWords = [["SEDUH", "PELAN", "NIKMATI"], ["RENYAH", "GURIH", "15K!"], ["LARI", "LEBIH", "RINGAN"], ["SEGAR", "JERNIH", "ALAMI"]];
+const mgX = [-2.6, -.87, .87, 2.6];
+BR.forEach((b, i) => {
+  const s = tvScreen((g, w, h, t) => {
+    g.fillStyle = "#0b0c12"; g.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2 + 6, tt = t + i * .7;
+    for (let k = 0; k < 3; k++) { const a = tt * (1.3 + i * .2) + k * 2.1; g.fillStyle = [b.col, "#ffffff", C.gold][k]; g.globalAlpha = .85; g.beginPath(); g.arc(cx + Math.cos(a) * 150, cy + Math.sin(a) * 80, 12 + k * 6, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+    const p = (Math.sin(tt * 2.2) + 1) / 2; g.strokeStyle = b.col; g.lineWidth = 8; g.beginPath(); g.arc(cx, cy, 44 + p * 18, 0, 7); g.stroke();
+    const words = mgWords[i]; const wi = Math.floor(tt / .8) % words.length; const ph = (tt / .8) % 1;
+    g.font = `800 ${52 + Math.min(1, ph * 4) * 8}px ${FD}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.fillText(words[wi], cx, cy);
+    for (let k = 0; k < 10; k++) { const bh = 8 + Math.abs(Math.sin(tt * 4 + k * .6)) * 34; g.fillStyle = b.col; g.globalAlpha = .6; g.fillRect(24 + k * 10, h - 20 - bh, 6, bh); } g.globalAlpha = 1;
+    g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = `400 13px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(`KELOMPOK ${b.k} · ${b.name.toUpperCase()} · MOTION`, 20, 26);
+  });
+  animTex.push(s);
+  const x = mgX[i];
+  plane(1.6, .9, basicTex(s.t), x, 1.75, -5.98);
+  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Motion graphic · 0:20", "1920×1080 · loop"], "#6d4fd8").t), x + .62, .98, -5.97);
+  // proyektor short-throw di plafon
+  box(.3, .12, .26, std("#d7dbe6"), x, 3.28, -4.9);
+  cyl(.012, .012, .25, trackM, x, 3.47, -4.9);
+  const gb = new THREE.BufferGeometry();
+  const p0 = [x, 3.24, -5.0], c = [[x - .8, 2.2, -5.97], [x + .8, 2.2, -5.97], [x + .8, 1.3, -5.97], [x - .8, 1.3, -5.97]];
+  const v = []; for (let k = 0; k < 4; k++) { const a = c[k], bb = c[(k + 1) % 4]; v.push(...p0, ...a, ...bb); }
+  gb.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  scene.add(new THREE.Mesh(gb, new THREE.MeshBasicMaterial({ color: "#c9bfff", transparent: true, opacity: .05, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })));
+  const hp = new THREE.Mesh(new THREE.TorusGeometry(.08, .015, 6, 16, Math.PI), std(C.mg)); hp.position.set(x - .62, 1.0, -5.92); scene.add(hp);
+});
 for (const z of [-3.3, -2.7]) box(3.2, .42, .4, std("#3a4052"), 0, .21, z + .1);
 box(.4, .6, .4, std("#15171d"), -2.9, .3, -5.5); box(.4, .6, .4, std("#15171d"), 2.9, .3, -5.5);
 
@@ -417,46 +424,56 @@ for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) {
 /* ---------- ZONA C: 3D ---------- */
 const prof = [[0, 0], [.42, 0], [.46, .04], [.46, .55], [.4, .7], [.2, .78], [.16, .82], [.16, .92], [.18, .94], [.18, 1], [0, 1]].map(([r, h]) => new THREE.Vector2(r * .12, h * .3));
 const bottleG = new THREE.LatheGeometry(prof, 28);
+const cupG = new THREE.LatheGeometry([[0, 0], [.07, 0], [.075, .01], [.095, .17], [.1, .18], [0, .18]].map(([r, h]) => new THREE.Vector2(r, h)), 28);
+const shoeShape = new THREE.Shape(); shoeShape.moveTo(-.15, 0); shoeShape.lineTo(.16, 0); shoeShape.quadraticCurveTo(.19, .03, .15, .06); shoeShape.lineTo(.02, .08); shoeShape.quadraticCurveTo(-.06, .14, -.13, .12); shoeShape.lineTo(-.15, .02); shoeShape.lineTo(-.15, 0);
+const shoeG = new THREE.ExtrudeGeometry(shoeShape, { depth: .09, bevelEnabled: true, bevelSize: .012, bevelThickness: .012, bevelSegments: 2 }); shoeG.translate(0, 0, -.045);
+const boxG = new THREE.BoxGeometry(.24, .13, .17);
+const mockGeo = [cupG, boxG, shoeG, bottleG];
 const bottles = [];
 const pedM = std("#eef0f6", { roughness: .6 });
 const pedPos = [[5.9, -4.4], [7.7, -4.4], [5.9, -2.3], [7.7, -2.3]];
-const bCols = [C.td, "#ffffff", C.vm, C.mg];
 pedPos.forEach(([x, z], i) => {
   box(.5, 1.0, .5, pedM, x, .5, z);
-  const tt = cyl(.2, .2, .03, std("#15171d", { metalness: .5 }), x, 1.015, z, scene, 24);
-  const b = new THREE.Mesh(bottleG, new THREE.MeshStandardMaterial({ color: bCols[i], roughness: .2, metalness: .15 }));
-  b.position.set(x, 1.03, z); scene.add(b);
-  if (i % 2 === 0) { const wf = new THREE.Mesh(bottleG, new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: .35 })); wf.scale.setScalar(1.01); b.add(wf); }
+  cyl(.2, .2, .03, std("#15171d", { metalness: .5 }), x, 1.015, z, scene, 24);
+  const b = new THREE.Mesh(mockGeo[i], new THREE.MeshStandardMaterial({ color: BR[i].col, roughness: .25, metalness: .1 }));
+  b.position.set(x, i === 1 ? 1.095 : 1.03, z); scene.add(b);
+  const wf = new THREE.Mesh(mockGeo[i], new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: .25 })); wf.scale.setScalar(1.01); b.add(wf);
   bottles.push(b);
   const sp = new THREE.SpotLight("#ffffff", 1.4, 5, .3, .5, 1.5); sp.position.set(x, 3.4, z + .6); sp.target = b; scene.add(sp);
-  // tablet di tiang
   cyl(.015, .015, 1.05, trackM, x - .45, .52, z + .3, scene, 6);
   const tb = box(.26, .18, .015, std("#0b0c12"), x - .45, 1.1, z + .32); tb.rotation.x = -.5; tb.rotation.y = -.4;
-  const ts = plane(.23, .15, std(C.td, { emissive: C.td, emissiveIntensity: .5 }), 0, 0, .009, 0, tb);
+  plane(.23, .15, std(BR[i].col, { emissive: BR[i].col, emissiveIntensity: .5 }), 0, 0, .009, 0, tb);
 });
-const anim3d = [[C.td, "BOTOL EMBUN", "CGI 0:20 · 4K"], [C.vm, "KOPI LERENG", "PACKSHOT 3D 0:15"], [C.mg, "ARUNIKA", "TURNTABLE 0:10"]].map(([col, name, sub], k) => {
+function productPath(g, i, base, s) {
+  g.beginPath();
+  if (i === 0) { g.moveTo(-.38 * s, base - s); g.lineTo(.38 * s, base - s); g.lineTo(.3 * s, base); g.lineTo(-.3 * s, base); g.closePath(); }
+  else if (i === 1) { g.moveTo(-.6 * s, base - .62 * s); g.lineTo(.6 * s, base - .62 * s); g.lineTo(.5 * s, base); g.lineTo(-.5 * s, base); g.closePath(); }
+  else if (i === 2) { g.moveTo(-.7 * s, base); g.lineTo(.72 * s, base); g.quadraticCurveTo(.85 * s, base - .15 * s, .66 * s, base - .28 * s); g.lineTo(.1 * s, base - .38 * s); g.quadraticCurveTo(-.3 * s, base - .7 * s, -.62 * s, base - .6 * s); g.lineTo(-.7 * s, base - .1 * s); g.closePath(); }
+  else bottlePath(g, 0, base, s);
+}
+const sub3d = ["PACKSHOT 3D · 0:15", "CGI AD · 0:20", "TURNTABLE · 0:10", "EXPLODED VIEW · 0:20"];
+BR.forEach((b, k) => {
   const tv = tvScreen((g, w, h, t) => {
     const gr = g.createRadialGradient(w / 2, h * .55, 20, w / 2, h * .55, w * .7); gr.addColorStop(0, "#2a3148"); gr.addColorStop(1, "#07080d"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     g.fillStyle = "rgba(255,255,255,.07)"; g.beginPath(); g.ellipse(w / 2, 250, 120, 16, 0, 0, 7); g.fill();
-    const a = t * (1.2 + k * .3), sx = .35 + .65 * Math.abs(Math.cos(a));
+    const a = t * (1.1 + k * .25), sx = .35 + .65 * Math.abs(Math.cos(a));
     g.save(); g.translate(w / 2, 0); g.scale(sx, 1);
-    bottlePath(g, 0, 250, 210);
-    const bg = g.createLinearGradient(-100, 0, 100, 0); const o = (Math.sin(a) + 1) / 2;
-    bg.addColorStop(0, col); bg.addColorStop(Math.min(.95, .2 + o * .6), "#ffffff"); bg.addColorStop(1, col); g.fillStyle = bg; g.fill();
-    g.fillStyle = "rgba(14,16,24,.75)"; g.fillRect(-97, 150, 194, 40);
+    productPath(g, k, 250, k === 3 ? 200 : 170);
+    const bg = g.createLinearGradient(-110, 0, 110, 0); const o = (Math.sin(a) + 1) / 2;
+    bg.addColorStop(0, b.col); bg.addColorStop(Math.min(.95, .15 + o * .7), "#ffffff"); bg.addColorStop(1, b.col); g.fillStyle = bg; g.fill();
+    g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1; g.stroke();
     g.restore();
-    g.fillStyle = "#fff"; g.font = `800 28px ${FD}`; g.fillText(name, 22, 40);
-    g.font = `400 14px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sub, 24, 62);
+    g.fillStyle = "#fff"; g.font = `800 26px ${FD}`; g.fillText(b.name.toUpperCase(), 22, 40);
+    g.font = `400 13px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(`KELOMPOK ${b.k} · ${sub3d[k]}`, 24, 62);
     g.textAlign = "right"; g.fillText(`FRAME ${String(Math.floor(t * 30) % 600).padStart(3, "0")}`, w - 20, h - 16); g.textAlign = "left";
   });
-  animTex.push(tv); return tv;
-});
-anim3d.forEach((tv, i) => {
-  const z = -4.9 + i * 1.6;
+  animTex.push(tv);
+  const z = -5.2 + k * 1.45;
   box(.06, .76, 1.32, std("#07080d", { metalness: .4, roughness: .3 }), 8.96, 1.55, z);
   plane(1.26, .71, basicTex(tv.t), 8.92, 1.55, z, -Math.PI / 2);
+  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Animasi 3D · 0:20", "Blender · 1080p"], "#0f86b8").t), 8.98, 1.05, z + .5, -Math.PI / 2);
 });
-plane(4.6, .58, new THREE.MeshBasicMaterial({ map: signTex("ZONA C · 3D MODELING", "animasi 3D di layar · mock-up di pedestal", C.td).t, transparent: true, toneMapped: false }), 8.94, 2.85, -3.3, -Math.PI / 2);
+plane(4.6, .58, new THREE.MeshBasicMaterial({ map: signTex("ZONA C · 3D MODELING", "4 animasi 3D · mock-up di pedestal", C.td).t, transparent: true, toneMapped: false }), 8.94, 2.85, -3.3, -Math.PI / 2);
 // stasiun VR
 const vrTex = ctex(256, 256, (g, w, h) => { g.fillStyle = "#1b2a36"; g.fillRect(0, 0, w, h); g.strokeStyle = C.td; g.lineWidth = 6; g.strokeRect(6, 6, w - 12, h - 12); g.lineWidth = 3; for (let i = -w; i < w; i += 28) { g.beginPath(); g.moveTo(i, h); g.lineTo(i + h, 0); g.stroke(); } g.fillStyle = "#1b2a36"; g.fillRect(60, 104, 136, 48); g.fillStyle = C.td; g.font = `800 34px ${FD}`; g.textAlign = "center"; g.fillText("VR", 128, 142); });
 const vr = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), std("#fff", { map: vrTex.t, roughness: .6 })); vr.rotation.x = -Math.PI / 2; vr.position.set(7, .012, 1.2); scene.add(vr);
@@ -503,9 +520,9 @@ person(6.0, 1.9, -Math.PI * .3, pi++, false, true);
 person(7.2, 5.2, Math.PI, pi++); person(8.2, 3.9, 0, pi++);
 // pejalan
 const walkers = [
-  { g: person(0, 0, 0, pi++), f: t => [-7.2, Math.sin(t * .35) * 3.4], },
-  { g: person(0, 0, 0, pi++), f: t => [1.5 + Math.sin(t * .25) * 2.5, 1.2 + Math.cos(t * .25) * 1.4] },
-  { g: person(0, 0, 0, pi++), f: t => [-5.6 + Math.sin(t * .3) * 1.2, 2.6 + Math.cos(t * .3) * .9] },
+  { g: person(0, 0, 0, pi++), f: t => [-7.6, Math.sin(t * .35) * 3.4], },
+  { g: person(0, 0, 0, pi++), f: t => [6.4 + Math.sin(t * .25) * .8, 3.6 + Math.cos(t * .25) * .5] },
+  { g: person(0, 0, 0, pi++), f: t => [1.9 + Math.sin(t * .3) * .9, 2.9 + Math.cos(t * .3) * .5] },
 ];
 
 /* ---------- jalur kamera ---------- */
@@ -513,31 +530,39 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const keys = [
   [V(0, 1.8, 17), V(0, 2.0, 7.4)],
   [V(0, 1.7, 13), V(0, 2.0, 7.4)],
-  [V(-.8, 1.6, 10.9), V(-3.3, 1.35, 7.7)],
-  [V(.6, 1.6, 9.3), V(3.4, 1.1, 7.3)],
-  [V(.6, 1.6, 4.9), V(4.3, 1.0, 4.7)],
-  [V(-3.4, 1.6, 3.1), V(-9, 1.55, .3)],
-  [V(-6.1, 1.6, -.2), V(-9, 1.5, -2.2)],
+  [V(0, 1.7, 10.6), V(0, 2.6, 7.4)],
+  [V(-.8, 1.6, 10.6), V(-3.3, 1.35, 7.7)],
+  [V(.6, 1.6, 9.4), V(3.4, 1.1, 7.3)],
+  [V(.3, 1.6, 7.2), V(0, 1.5, 3)],
+  [V(.8, 1.75, 5.5), V(4.3, .9, 4.6)],
+  [V(-3.4, 1.6, 3.6), V(-9, 1.55, 2.6)],
+  [V(-6.0, 1.6, 2.4), V(-9, 1.5, 1.3)],
+  [V(-6.0, 1.6, -.9), V(-9, 1.5, -2.6)],
   [V(-2.2, 1.95, 3.7), V(-3, 1.3, -.4)],
-  [V(0, 1.6, -1.2), V(0, 1.85, -6)],
-  [V(3.6, 1.7, -.4), V(6.8, 1.1, -3.4)],
-  [V(3.6, 1.8, .2), V(7.3, .7, 2.8)],
-  [V(3, 5, 6.5), V(0, 0, -.5)],
-  [V(0, 14, 9), V(0, 0, -.6)],
+  [V(0, 1.65, -.6), V(0, 1.75, -6)],
+  [V(-1.5, 1.6, -2.3), V(-2.4, 1.65, -6)],
+  [V(1.2, 1.6, -2.0), V(2.4, 1.65, -6)],
+  [V(2.8, 1.7, .2), V(7, 1.2, -3.4)],
+  [V(5.0, 1.6, -.6), V(9, 1.5, -4.4)],
+  [V(5.0, 1.6, -3.4), V(9, 1.45, -1.0)],
+  [V(4.2, 1.7, .2), V(7.6, 1.0, 4.0)],
+  [V(2.5, 3.2, 6.2), V(-1, 1.0, -1.5)],
+  [V(0, 11, 9), V(0, 0, -.6)],
+  [V(0, 14, 8.6), V(0, 0, -.6)],
 ];
 const posC = new THREE.CatmullRomCurve3(keys.map(k => k[0]), false, "centripetal");
 const lookC = new THREE.CatmullRomCurve3(keys.map(k => k[1]), false, "centripetal");
 const caps = [
-  [2.4, 5, "Luar ruang · pintu masuk", "Gate masuk (gapura)", "Rangka hollow + print albatros 4,6 × 3,6 m · berisi key visual & zona", C.vm],
-  [5, 7.6, "Luar ruang", "Poster stand (tripod)", "Poster pameran & poster karya iklan, foam board A1 di standing tripod", C.mg],
-  [7.6, 10.4, "Luar ruang · penunjuk arah", "Totem kubus", "Kubus 56 cm ditumpuk 4, tiap sisi berisi arah zona & pola key visual", C.mg],
-  [10.4, 13.5, "Dalam ruang", "Registrasi", "Buku tamu digital, QR katalog, daftar harga lisensi", C.green],
-  [13.5, 19.5, "Zona A", "Video Marketing", "4 TV 55\" · headphone · label karya dengan durasi & resolusi", C.vm],
-  [19.5, 22.5, "Area tengah", "Artist talk", "TV 65\" untuk breakdown proses · 10 kursi", C.gold],
-  [22.5, 25.5, "Zona B", "Motion Graphic", "Ruang proyeksi 4 × 2,25 m · tirai blackout · speaker stereo", C.mg],
-  [25.5, 28.5, "Zona C", "3D Modeling", "3 layar animasi 3D produk (CGI, packshot, turntable) · mock-up di pedestal", C.td],
-  [28.5, 31.5, "Zona C & sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2 m · meja konsumsi jauh dari perangkat", C.td],
-  [31.5, 36.1, "Tampak atas", "Denah keseluruhan 18 × 12 m", "Alur: gate → registrasi → Zona A → talk → Zona B → Zona C", C.fg],
+  [2.6, 9, "Luar ruang · pintu masuk", "Gate masuk (gapura)", "Rangka hollow + print albatros 4,6 × 3,6 m · key visual dari animasi 3D", C.vm],
+  [9, 13, "Luar ruang", "Poster stand (tripod)", "Poster karya di foam board A1 · QR ke video karya", C.mg],
+  [13, 17, "Luar ruang · penunjuk arah", "Totem kubus", "Kubus 56 cm ditumpuk 4 · arah zona & pola key visual", C.mg],
+  [17, 21, "Dalam ruang", "Registrasi", "Buku tamu digital, QR katalog, daftar harga lisensi", C.green],
+  [21, 30, "Zona A · 4 karya", "Video Marketing", "Satu karya per kelompok · TV 55\" + headphone + label", C.vm],
+  [30, 33, "Area tengah", "Artist talk", "TV 65\" untuk breakdown proses · 10 kursi", C.gold],
+  [33, 42, "Zona B · 4 karya", "Motion Graphic", "4 layar proyeksi 1,6 × 0,9 m · proyektor short-throw · headphone", C.mg],
+  [42, 51, "Zona C · 4 karya", "3D Modeling", "4 animasi 3D produk di TV · mock-up tiap produk di pedestal", C.td],
+  [51, 54, "Sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2 m · konsumsi jauh dari perangkat", C.td],
+  [54, 60.1, "Tampak atas", "12 karya · 4 kelompok", "Kopi Lereng · Krispi Box · Sepatu Arunika · Embun", C.fg],
 ];
 const capEl = document.getElementById("cap"), capEb = document.getElementById("capEb"), capT = document.getElementById("capT"), capS = document.getElementById("capS");
 const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
