@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulasi Ruang RENDER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Plus+Jakarta+Sans:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root { --ink: #0e1018; --fg: #eef0fa; --muted: #a3aac2; --vm: #ff7a59; --mg: #a58cff; --td: #3fbdf0; color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: var(--ink); color: var(--fg); overflow: hidden; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hud { position: fixed; inset: 0; pointer-events: none; }
+  .brand { position: absolute; top: max(18px, env(safe-area-inset-top)); left: max(20px, env(safe-area-inset-left)); font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; display: flex; gap: 10px; align-items: center; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  .brand b { font-family: "Unbounded", "Arial Black", sans-serif; letter-spacing: 0; font-size: 16px; }
+  .rec { width: 9px; height: 9px; border-radius: 50%; background: #ff4d55; }
+  .tc { position: absolute; top: max(18px, env(safe-area-inset-top)); right: max(20px, env(safe-area-inset-right)); font-family: "JetBrains Mono", monospace; font-size: 13px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+  .cap { position: absolute; left: max(20px, env(safe-area-inset-left)); bottom: 64px; max-width: min(560px, 86vw); background: rgba(10,12,20,.72); border-left: 4px solid var(--c, var(--mg)); padding: 14px 18px; border-radius: 4px; transition: opacity .4s; backdrop-filter: blur(4px); }
+  .cap .eb { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .cap h2 { margin: 4px 0 2px; font-family: "Unbounded", "Arial Black", sans-serif; font-size: clamp(18px, 2.6vw, 28px); line-height: 1.15; }
+  .cap p { margin: 0; color: var(--muted); font-size: clamp(12px, 1.4vw, 15px); }
+  .title { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; transition: opacity .6s; background: radial-gradient(ellipse at center, rgba(14,16,24,.35), rgba(14,16,24,.75)); }
+  .title h1 { margin: 0; font-family: "Unbounded", "Arial Black", sans-serif; font-weight: 800; font-size: clamp(42px, 9vw, 110px); letter-spacing: -.02em; line-height: 1; text-shadow: -4px 0 0 rgba(255,122,89,.85), 4px 0 0 rgba(63,189,240,.85); }
+  .title p { margin: 14px 0 0; font-family: "JetBrains Mono", monospace; letter-spacing: .16em; text-transform: uppercase; font-size: clamp(11px, 1.5vw, 16px); }
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,.12); }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--vm), var(--mg), var(--td)); }
+  .ctl { position: fixed; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); display: flex; gap: 12px; align-items: center; }
+  .ctl button { font: 600 14px "Plus Jakarta Sans", system-ui, sans-serif; background: var(--fg); color: var(--ink); border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  .ctl button:focus-visible, .ctl input:focus-visible { outline: 2px solid var(--mg); outline-offset: 2px; }
+  .ctl input { flex: 1; accent-color: var(--mg); min-width: 0; }
+  .render .ctl { display: none; }
+  .render .cap { bottom: 36px; }
+  .render .cap, .render .title { transition: none; }
+  .loading { position: fixed; inset: 0; display: grid; place-content: center; font-family: "JetBrains Mono", monospace; color: var(--muted); }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Simulasi 3D ruang pamer RENDER: gate masuk, registrasi, zona video marketing, ruang proyeksi motion graphic, zona 3D modeling" role="img"></canvas>
+<div class="loading" id="loading">Memuat ruang pamer…</div>
+<div class="hud">
+  <div class="brand"><span class="rec"></span><b>RENDER</b><span>simulasi ruang pamer</span></div>
+  <div class="tc" id="tc">00:00:00:00</div>
+  <div class="title" id="title"><div><h1>RENDER</h1><p>Simulasi ruang pamer · 12–19 Des 2026</p></div></div>
+  <div class="cap" id="cap"><div class="eb" id="capEb"></div><h2 id="capT"></h2><p id="capS"></p></div>
+  <div class="bar"><i id="bar"></i></div>
+</div>
+<div class="ctl">
+  <button type="button" id="play">Jeda</button>
+  <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Posisi video simulasi">
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(async () => {
+const RENDER_MODE = location.hash === "#render";
+if (RENDER_MODE) document.documentElement.classList.add("render");
+try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2500))]); } catch (e) {}
+
+const C = { ink: "#0e1018", fg: "#eef0fa", vm: "#ff7a59", mg: "#a58cff", td: "#3fbdf0", green: "#2f9d63", gold: "#f4b740", paper: "#f4f4f0" };
+const FD = '"Unbounded", "Arial Black", sans-serif', FB = '"Plus Jakarta Sans", Arial, sans-serif', FM = '"JetBrains Mono", monospace';
+const DUR = 36, FPS = 30;
+
+/* ---------- renderer ---------- */
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(RENDER_MODE ? 1 : Math.min(2, devicePixelRatio || 1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#131a2b");
+scene.fog = new THREE.Fog("#131a2b", 22, 48);
+const camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.05, 120);
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener("resize", resize); resize();
+
+/* ---------- helpers ---------- */
+function ctex(w, h, draw) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"); draw && draw(g, w, h, 0);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+  return { c, g, t, draw };
+}
+const std = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: .7, metalness: 0 }, o));
+const basicTex = t => new THREE.MeshBasicMaterial({ map: t, toneMapped: false });
+function box(w, h, d, mat, x, y, z, parent = scene) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); parent.add(m); return m; }
+function plane(w, h, mat, x, y, z, ry = 0, parent = scene) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); m.position.set(x, y, z); m.rotation.y = ry; parent.add(m); return m; }
+function cyl(rt, rb, h, mat, x, y, z, parent = scene, seg = 16) { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat); m.position.set(x, y, z); parent.add(m); return m; }
+function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function bottlePath(g, cx, base, s) {
+  g.beginPath();
+  g.moveTo(cx - .42 * s, base); g.lineTo(cx - .46 * s, base - .04 * s); g.lineTo(cx - .46 * s, base - .55 * s);
+  g.quadraticCurveTo(cx - .46 * s, base - .72 * s, cx - .2 * s, base - .8 * s); g.lineTo(cx - .16 * s, base - .82 * s); g.lineTo(cx - .16 * s, base - 1 * s);
+  g.lineTo(cx + .16 * s, base - 1 * s); g.lineTo(cx + .16 * s, base - .82 * s); g.lineTo(cx + .2 * s, base - .8 * s);
+  g.quadraticCurveTo(cx + .46 * s, base - .72 * s, cx + .46 * s, base - .55 * s); g.lineTo(cx + .46 * s, base - .04 * s); g.lineTo(cx + .42 * s, base); g.closePath();
+}
+function rings(g, w, h, bg) {
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  const cols = [C.td, C.mg, "#5b7bff", "#7fe3c4"];
+  const s = w / 3;
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+    const x = i * s - s * .2 + (j % 2) * s * .5, y = j * s - s * .2;
+    g.lineWidth = s * .16; g.strokeStyle = cols[(i + j) % 4];
+    g.beginPath(); g.ellipse(x, y, s * .32, s * .4, .5, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = s * .06; g.strokeStyle = "rgba(255,255,255,.75)";
+    g.beginPath(); g.ellipse(x, y, s * .32, s * .4, .5, -.4, 1.2); g.stroke();
+  }
+}
+
+/* ---------- ruangan ---------- */
+const W = 18, D = 12, H = 3.6;
+const floorTex = ctex(512, 512, (g, w, h) => {
+  g.fillStyle = "#2b3040"; g.fillRect(0, 0, w, h);
+  g.strokeStyle = "rgba(255,255,255,.05)"; g.lineWidth = 2;
+  for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.stroke(); g.beginPath(); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); }
+});
+floorTex.t.wrapS = floorTex.t.wrapT = THREE.RepeatWrapping; floorTex.t.repeat.set(4.5, 3);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), std("#ffffff", { map: floorTex.t, roughness: .62, metalness: .05 }));
+floor.rotation.x = -Math.PI / 2; scene.add(floor);
+const outside = new THREE.Mesh(new THREE.PlaneGeometry(40, 16), std("#5a6070", { roughness: .9 }));
+outside.rotation.x = -Math.PI / 2; outside.position.set(0, -0.01, 14); scene.add(outside);
+const paving = new THREE.Mesh(new THREE.PlaneGeometry(6, 8), std("#7b8193", { roughness: .8 }));
+paving.rotation.x = -Math.PI / 2; paving.position.set(0, 0, 10); scene.add(paving);
+
+const wallM = std("#1d2232", { roughness: .9 });
+const facadeM = std("#8f96a8", { roughness: .9 });
+box(W, H, .2, wallM, 0, H / 2, -D / 2 - .1);
+box(.2, H, D, wallM, -W / 2 - .1, H / 2, 0);
+box(.2, H, D, wallM, W / 2 + .1, H / 2, 0);
+// dinding depan + pintu 2,8 m
+const doorW = 2.8, segW = (W - doorW) / 2;
+for (const s of [-1, 1]) {
+  box(segW, H + .6, .3, facadeM, s * (doorW / 2 + segW / 2), (H + .6) / 2, D / 2 + .15);
+}
+box(doorW, H + .6 - 2.6, .3, facadeM, 0, 2.6 + (H + .6 - 2.6) / 2, D / 2 + .15);
+box(W + 2, .5, .4, std("#9aa1b6"), 0, H + .85, D / 2 + .15);
+// kaca jendela fasad
+const glassM = std("#22324a", { roughness: .1, metalness: .6 });
+for (const x of [-6.5, -4.2, 4.2, 6.5]) box(1.8, 1.8, .05, glassM, x, 1.5, D / 2 + .31);
+const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(W, D), std("#11141e"));
+ceiling.rotation.x = Math.PI / 2; ceiling.position.y = H; scene.add(ceiling);
+// track lights
+const trackM = std("#3a4052", { metalness: .5, roughness: .4 });
+for (const z of [-3, 1, 4]) {
+  box(14, .05, .05, trackM, 0, H - .05, z);
+  for (let x = -6; x <= 6; x += 2) { const l = cyl(.05, .07, .16, std("#9aa1b6", { emissive: "#fff3d6", emissiveIntensity: .6 }), x, H - .15, z); l.rotation.x = .5; }
+}
+
+/* ---------- cahaya ---------- */
+scene.add(new THREE.HemisphereLight("#cfd7ff", "#1a1d2a", .55));
+scene.add(new THREE.AmbientLight("#ffffff", .18));
+const pl = (c, i, d, x, y, z) => { const l = new THREE.PointLight(c, i, d, 2); l.position.set(x, y, z); scene.add(l); return l; };
+pl("#fff1dc", 1.3, 14, -5, 3.2, 1);
+pl("#fff1dc", 1.2, 14, 5, 3.2, -1);
+pl("#fff1dc", 1.1, 12, 2, 3.2, 4);
+pl("#b8a8ff", .8, 9, 0, 3, -3.5);
+const gateSpot = new THREE.SpotLight("#fff4e0", 1.5, 22, .7, .5, 1.2);
+gateSpot.position.set(0, 7, 13); gateSpot.target.position.set(0, 1.6, 7.2); scene.add(gateSpot, gateSpot.target);
+pl("#ffd9a8", .9, 10, -4, 3.5, 9);
+pl("#ffd9a8", .9, 10, 4, 3.5, 9);
+
+/* ---------- tekstur statis ---------- */
+const headerTex = ctex(1024, 170, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, "#151a2c"); gr.addColorStop(1, "#1f1a3a"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.fillStyle = C.vm; g.fillRect(0, h - 12, w / 3, 12); g.fillStyle = C.mg; g.fillRect(w / 3, h - 12, w / 3, 12); g.fillStyle = C.td; g.fillRect(2 * w / 3, h - 12, w / 3, 12);
+  g.font = `800 78px ${FD}`; g.textBaseline = "middle"; g.textAlign = "left";
+  g.fillStyle = C.vm; g.fillText("RENDER", 46, 80); g.fillStyle = C.td; g.fillText("RENDER", 54, 80); g.fillStyle = C.fg; g.fillText("RENDER", 50, 80);
+  g.textAlign = "right"; g.font = `700 30px ${FB}`; g.fillStyle = C.fg; g.fillText("Produk dalam Gerak", w - 46, 62);
+  g.font = `400 22px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("PAMERAN KARYA DIGITAL · 12–19.12.2026", w - 46, 104);
+});
+function pillarTex(label, sub, col, flip) {
+  return ctex(256, 1000, (g, w, h) => {
+    g.fillStyle = "#cfe6f7"; g.fillRect(0, 0, w, h);
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#8fd0f5"); gr.addColorStop(1, "#e8f5fd"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.fillStyle = "rgba(255,255,255,.9)"; for (const [x, y, r] of [[60, 120, 34], [180, 300, 28], [70, 560, 30]]) { g.beginPath(); g.arc(x, y, r, 0, 7); g.arc(x + r, y + 6, r * .8, 0, 7); g.arc(x - r, y + 8, r * .7, 0, 7); g.fill(); }
+    g.save(); g.translate(w / 2, 470); g.rotate(flip ? .18 : -.18);
+    bottlePath(g, 0, 160, 300); g.fillStyle = "#fff"; g.fill(); g.lineWidth = 4; g.strokeStyle = "#cfd6e4"; g.stroke();
+    g.fillStyle = col; g.fillRect(-138, 10, 276, 70); g.font = `800 34px ${FD}`; g.fillStyle = "#fff"; g.textAlign = "center"; g.fillText("RENDER", 0, 58);
+    g.restore();
+    g.fillStyle = col; rr(g, 24, 760, w - 48, 150, 18); g.fill();
+    g.fillStyle = "#fff"; g.textAlign = "center"; g.font = `800 30px ${FD}`;
+    label.split(" ").forEach((l, i) => g.fillText(l, w / 2, 818 + i * 40));
+    g.font = `400 20px ${FM}`; g.fillStyle = "#0e1018"; g.fillText(sub, w / 2, 955);
+    g.fillStyle = "#2f9d63"; g.beginPath(); g.moveTo(w / 2, 690); g.lineTo(w / 2 - 60, 740); g.lineTo(w / 2 + 60, 740); g.fill();
+  });
+}
+function posterTex(kind) {
+  return ctex(420, 594, (g, w, h) => {
+    if (kind === "pameran") {
+      g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+      g.strokeStyle = C.mg; g.lineWidth = 3; g.beginPath(); g.arc(210, 200, 120, 0, 7); g.stroke();
+      g.strokeStyle = C.td; g.setLineDash([6, 8]); g.beginPath(); g.arc(210, 200, 80, 0, 7); g.stroke(); g.setLineDash([]);
+      bottlePath(g, 210, 285, 150); g.strokeStyle = C.fg; g.lineWidth = 3; g.stroke();
+      g.font = `800 76px ${FD}`; g.fillStyle = C.vm; g.fillText("RENDER", 30, 450); g.fillStyle = C.td; g.fillText("RENDER", 38, 450); g.fillStyle = C.fg; g.fillText("RENDER", 34, 450);
+      g.font = `700 20px ${FB}`; g.fillText("Produk dalam Gerak", 36, 490);
+      g.font = `400 14px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("12–19.12.2026 · GALERI KAMPUS", 36, 540);
+    } else {
+      const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#2f86e0"); gr.addColorStop(1, "#8fd0f5"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.fillStyle = "rgba(255,255,255,.85)"; for (const [x, y] of [[80, 380], [330, 300], [360, 120]]) { g.beginPath(); g.arc(x, y, 30, 0, 7); g.arc(x + 30, y + 6, 24, 0, 7); g.arc(x - 28, y + 8, 22, 0, 7); g.fill(); }
+      g.save(); g.translate(210, 70); g.rotate(-.08); g.font = `800 44px ${FD}`; g.textAlign = "center"; g.fillStyle = "#fff"; g.fillText("KRISPI BOX", 0, 0); g.font = `700 22px ${FB}`; g.fillStyle = "#ffe066"; g.fillText("Kampanye Musim Hujan", 0, 34); g.restore();
+      g.fillStyle = "#e9c08a"; g.beginPath(); g.moveTo(90, 250); g.lineTo(330, 230); g.lineTo(350, 360); g.lineTo(110, 390); g.closePath(); g.fill();
+      for (let i = 0; i < 14; i++) { g.fillStyle = i % 2 ? "#c9741f" : "#e08f2c"; g.beginPath(); g.ellipse(120 + (i % 7) * 32, 240 + Math.floor(i / 7) * 34, 24, 18, i, 0, 7); g.fill(); }
+      g.fillStyle = "#fff"; for (let i = 0; i < 4; i++) { rr(g, 22 + i * 98, 440, 88, 100, 8); g.fill(); g.fillStyle = "#e0272f"; g.font = `800 20px ${FD}`; g.textAlign = "center"; g.fillText(["15K", "22K", "29K", "35K"][i], 66 + i * 98, 528); g.fillStyle = "#e08f2c"; g.beginPath(); g.ellipse(66 + i * 98, 478, 26, 18, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; }
+      g.textAlign = "left"; g.font = `400 13px ${FM}`; g.fillStyle = "#0e1018"; g.fillText("Karya: Riani P. · Video Marketing", 22, 572);
+    }
+  });
+}
+function cubeFace(kind, text, col, arrow) {
+  return ctex(256, 256, (g, w, h) => {
+    if (kind === "ring") { rings(g, w, h, "#16205a"); return; }
+    if (kind === "white") {
+      g.fillStyle = "#f6f7fb"; g.fillRect(0, 0, w, h);
+      g.strokeStyle = col; g.lineWidth = 14; g.beginPath(); g.arc(210, 40, 50, 0, 7); g.stroke();
+      g.fillStyle = col; rr(g, 40, 70, 176, 116, 10); g.fill();
+      g.fillStyle = "#fff"; g.font = `800 32px ${FD}`; g.textAlign = "center"; g.fillText("RENDER", 128, 140);
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) { g.fillStyle = "#3b4a8c"; g.beginPath(); g.arc(150 + i * 22, 214 + j * 20, 6, 0, 7); g.fill(); }
+      return;
+    }
+    g.fillStyle = col; g.fillRect(0, 0, w, h);
+    g.fillStyle = "#fff"; g.textAlign = "center"; g.font = `800 24px ${FD}`;
+    text.split("|").forEach((l, i) => g.fillText(l, 128, 92 + i * 32));
+    g.lineWidth = 10; g.strokeStyle = "#fff"; g.lineCap = "round"; g.lineJoin = "round";
+    const dx = arrow === "L" ? -1 : 1;
+    g.beginPath(); g.moveTo(128 - 50 * dx, 200); g.lineTo(128 + 50 * dx, 200); g.moveTo(128 + 50 * dx - 22 * dx, 178); g.lineTo(128 + 50 * dx, 200); g.lineTo(128 + 50 * dx - 22 * dx, 222); g.stroke();
+  });
+}
+function signTex(text, sub, col) {
+  return ctex(1024, 128, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = col; g.fillRect(0, 20, 16, 88);
+    g.font = `800 52px ${FD}`; g.fillStyle = C.fg; g.textBaseline = "middle"; g.fillText(text, 40, 52);
+    g.font = `400 24px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sub, 42, 100);
+  });
+}
+function labelTex(artist, title, meta, col, sold) {
+  return ctex(256, 180, (g, w, h) => {
+    g.fillStyle = "#fbfbf8"; g.fillRect(0, 0, w, h); g.fillStyle = col; g.fillRect(0, 0, 8, h);
+    g.fillStyle = "#16181f"; g.font = `700 20px ${FB}`; g.fillText(artist, 22, 36);
+    g.font = `800 20px ${FD}`; g.fillText(title, 22, 70);
+    g.font = `400 13px ${FM}`; g.fillStyle = "#5a6078"; meta.forEach((m, i) => g.fillText(m, 22, 100 + i * 20));
+    if (sold) { g.fillStyle = "#e0272f"; g.beginPath(); g.arc(230, 30, 11, 0, 7); g.fill(); }
+    g.fillStyle = "#16181f"; for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) if ((i * 7 + j * 3) % 4 !== 0) g.fillRect(196 + i * 9, 120 + j * 9, 8, 8);
+  });
+}
+
+/* ---------- gate masuk (gapura) ---------- */
+const gate = new THREE.Group(); gate.position.set(0, 0, 7.4); scene.add(gate);
+const sideM = std("#2a5b8c");
+const mkFace = (tex) => [sideM, sideM, sideM, sideM, basicTex(tex.t), std("#e6e9f2")];
+const pL = pillarTex("VIDEO MOTION", "ZONA A · B", C.vm, false);
+const pR = pillarTex("3D MODELING", "ZONA C", C.td, true);
+const pillL = new THREE.Mesh(new THREE.BoxGeometry(.8, 2.9, .35), mkFace(pL)); pillL.position.set(-1.9, 1.45, 0); gate.add(pillL);
+const pillR = new THREE.Mesh(new THREE.BoxGeometry(.8, 2.9, .35), mkFace(pR)); pillR.position.set(1.9, 1.45, 0); gate.add(pillR);
+const head = new THREE.Mesh(new THREE.BoxGeometry(4.6, .76, .38), mkFace(headerTex)); head.position.set(0, 3.28, 0); gate.add(head);
+// kaki pemberat gate
+for (const x of [-1.9, 1.9]) box(1.0, .12, .7, std("#2b2f3c"), x, .06, 0, gate);
+
+/* ---------- poster stand (tripod) ---------- */
+function posterStand(x, z, ry, tex) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  const metal = std("#15171d", { metalness: .6, roughness: .35 });
+  cyl(.014, .014, 1.95, metal, 0, .975, 0, g, 8);
+  for (let i = 0; i < 3; i++) {
+    const a = i / 3 * Math.PI * 2 + .5;
+    const leg = cyl(.012, .012, .75, metal, Math.cos(a) * .22, .3, Math.sin(a) * .22, g, 6);
+    leg.rotation.z = Math.cos(a) * .55; leg.rotation.x = -Math.sin(a) * .55;
+  }
+  box(.36, .04, .06, metal, 0, .93, .03, g);
+  box(.3, .04, .06, metal, 0, 1.93, .03, g);
+  const board = plane(.62, .88, basicTex(tex.t), 0, 1.42, .065, 0, g);
+  const back = plane(.62, .88, std("#e6e9f2"), 0, 1.42, .06, Math.PI, g);
+  return g;
+}
+const posterA = posterTex("pameran"), posterB = posterTex("karya");
+posterStand(-3.3, 7.7, .25, posterA);
+posterStand(3.1, 8.3, -.3, posterB);
+posterStand(2.6, 3.1, -.6, posterB);
+
+/* ---------- totem kubus ---------- */
+function totem(x, z, ry, spec) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  const s = .56;
+  spec.forEach((f, i) => {
+    const mats = f.map(t => basicTex(t.t));
+    const m = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), [mats[1], mats[1], basicTex(ringTop.t), basicTex(ringTop.t), mats[0], mats[1]]);
+    m.position.y = s / 2 + i * s; m.rotation.y = (i % 2 ? 1 : -1) * .2;
+    g.add(m);
+  });
+  return g;
+}
+const ringTop = cubeFace("ring");
+const ringF = cubeFace("ring"), whiteF = cubeFace("white", "", "#7fbfae");
+const arrA = cubeFace("arrow", "ZONA A|VIDEO", "#3355d6", "L");
+const arrC = cubeFace("arrow", "ZONA C|3D MODEL", "#2f9d63", "R");
+const arrReg = cubeFace("arrow", "REGISTRASI|& KATALOG", "#3355d6", "R");
+const whiteB = cubeFace("white", "", "#9aa3c8");
+totem(3.4, 7.3, -.35, [[ringF, ringF], [arrReg, whiteF], [whiteB, ringF], [ringF, ringF]]);
+totem(-2.7, 4.9, .5, [[ringF, ringF], [arrA, whiteF], [arrC, whiteB], [ringF, ringF]]);
+
+/* ---------- registrasi ---------- */
+box(2.2, .95, .6, std("#e8eaf2"), 4.3, .475, 4.7);
+box(2.2, .3, .02, basicTex(signTex("REGISTRASI", "buku tamu · QR katalog", C.green).t), 4.3, .7, 4.39);
+const tab = box(.26, .02, .18, std("#0b0c12"), 3.9, .97, 4.65); tab.rotation.x = -.4;
+box(.24, .01, .16, std(C.td, { emissive: C.td, emissiveIntensity: .7 }), 3.9, .985, 4.65).rotation.x = -.4;
+
+/* ---------- ZONA A: dinding layar ---------- */
+function tvScreen(draw, w = 512, h = 288) { const t = ctex(w, h); t.draw = draw; return t; }
+const tvDraws = [
+  (g, w, h, t) => { // Kopi Lereng
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#f7b267"); gr.addColorStop(1, "#7a3e1d"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    const sy = 220 - (t % 10) * 14; g.fillStyle = "#ffe7a8"; g.beginPath(); g.arc(360, sy, 46, 0, 7); g.fill();
+    g.fillStyle = "#3b2415"; g.beginPath(); g.moveTo(0, h); g.lineTo(0, 200); g.lineTo(140, 150); g.lineTo(260, 210); g.lineTo(380, 170); g.lineTo(w, 220); g.lineTo(w, h); g.fill();
+    g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.fillText("Kopi Lereng", 30, 70); g.font = `500 20px ${FB}`; g.fillText("Pagi yang pelan.", 32, 102);
+  },
+  (g, w, h, t) => { // Krispi Box
+    g.fillStyle = "#e0402a"; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 6; i++) { const b = Math.abs(Math.sin(t * 3 + i)) * 40; g.fillStyle = i % 2 ? "#ffcc4d" : "#ff9f1c"; g.beginPath(); g.ellipse(70 + i * 75, 210 - b, 30, 24, 0, 0, 7); g.fill(); }
+    g.fillStyle = "#fff"; g.font = `800 44px ${FD}`; g.fillText("KRISPI BOX", 30, 72); g.font = `500 20px ${FB}`; g.fillText("Mulai Rp15K", 32, 104);
+  },
+  (g, w, h, t) => { // Sepatu Arunika
+    g.fillStyle = "#2a1f5c"; g.fillRect(0, 0, w, h);
+    const x = ((t * 140) % (w + 300)) - 220;
+    g.fillStyle = C.mg; g.beginPath(); g.moveTo(x, 210); g.quadraticCurveTo(x + 40, 140, x + 110, 160); g.lineTo(x + 200, 190); g.quadraticCurveTo(x + 220, 210, x + 200, 222); g.lineTo(x, 222); g.fill();
+    g.fillStyle = "#fff"; g.fillRect(x, 222, 205, 10);
+    for (let i = 0; i < 5; i++) { g.fillStyle = "rgba(165,140,255,.4)"; g.fillRect(x - 40 - i * 30, 180 + i * 8, 24, 4); }
+    g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.fillText("ARUNIKA", 30, 70); g.font = `500 20px ${FB}`; g.fillText("Lari lebih ringan.", 32, 102);
+  },
+  (g, w, h, t) => { // Embun
+    const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#0b5f84"); gr.addColorStop(1, "#3fbdf0"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.save(); g.translate(380, 0); bottlePath(g, 0, 260, 200); g.fillStyle = "rgba(255,255,255,.85)"; g.fill(); g.restore();
+    const dy = (t * 120) % 260; g.fillStyle = "#e9f6fc"; g.beginPath(); g.arc(200, dy, 10, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.fillText("Embun", 30, 70); g.font = `500 20px ${FB}`; g.fillText("Segar dari pegunungan.", 32, 102);
+  },
+];
+const animTex = [];
+const tvZ = [-3.9, -1.3, 1.3, 3.9];
+const labels = [
+  labelTex("Raka P.", "Pagi di Lereng", ["Video iklan · 0:30", "1920×1080"], "#d9472a"),
+  labelTex("Riani P.", "Krispi Box", ["Video iklan · 0:15", "1080×1920"], "#d9472a", true),
+  labelTex("Nadia K.", "Arunika Run", ["Motion · 0:15", "After Effects"], "#6d4fd8"),
+  labelTex("Bima A.", "Botol Embun", ["3D + video · 0:20", "Blender"], "#0f86b8"),
+];
+tvZ.forEach((z, i) => {
+  const tv = tvScreen(tvDraws[i]); animTex.push(tv);
+  box(.06, .76, 1.32, std("#07080d", { metalness: .4, roughness: .3 }), -8.96, 1.55, z);
+  plane(1.26, .71, basicTex(tv.t), -8.92, 1.55, z, Math.PI / 2);
+  plane(.26, .18, basicTex(labels[i].t), -8.98, 1.3, z + .9, Math.PI / 2);
+  // headphone hook
+  const hp = new THREE.Mesh(new THREE.TorusGeometry(.08, .015, 6, 16, Math.PI), std(C.vm)); hp.position.set(-8.9, 1.02, z - .55); hp.rotation.y = Math.PI / 2; scene.add(hp);
+  // spot ke label
+  const sp = new THREE.SpotLight("#fff1dc", .9, 5, .35, .6, 1.5); sp.position.set(-7.6, 3.4, z + .9); sp.target.position.set(-8.95, 1.3, z + .9); scene.add(sp, sp.target);
+});
+plane(5, .62, new THREE.MeshBasicMaterial({ map: signTex("ZONA A · VIDEO MARKETING", "4 layar · headphone · kelompok 1–4", C.vm).t, transparent: true, toneMapped: false }), -8.94, 2.85, 0, Math.PI / 2);
+box(1.6, .42, .45, std("#3a4052"), -6.6, .21, -1.3);
+box(1.6, .42, .45, std("#3a4052"), -6.6, .21, 1.3);
+
+/* ---------- ZONA B: ruang proyeksi ---------- */
+const partM = std("#0c0e15", { roughness: 1 });
+box(.12, 3.2, 3.5, partM, -3.6, 1.6, -4.25);
+box(.12, 3.2, 3.5, partM, 3.6, 1.6, -4.25);
+const curtM = std("#2a2147", { roughness: 1 });
+for (const s of [-1, 1]) for (let i = 0; i < 6; i++) { const c = cyl(.09, .09, 3.1, curtM, s * (3.5 - i * .17), 1.55, -2.5 + (i % 2) * .06, scene, 8); }
+box(7.3, .25, .2, partM, 0, 3.3, -2.5);
+plane(3.2, .4, new THREE.MeshBasicMaterial({ map: signTex("ZONA B · MOTION GRAPHIC", "ruang proyeksi · 4 × 2,25 m", C.mg).t, transparent: true, toneMapped: false }), 0, 3.0, -2.38);
+const proj = tvScreen((g, w, h, t) => {
+  g.fillStyle = "#07080d"; g.fillRect(0, 0, w, h);
+  const cx = w / 2, cy = h / 2;
+  for (let i = 0; i < 4; i++) { const a = t * 1.4 + i * Math.PI / 2; g.fillStyle = [C.mg, C.td, C.vm, C.gold][i]; g.beginPath(); g.arc(cx + Math.cos(a) * 190, cy + Math.sin(a) * 150, 26 + i * 6, 0, 7); g.fill(); }
+  const p = (Math.sin(t * 2) + 1) / 2; g.strokeStyle = C.mg; g.lineWidth = 12; g.beginPath(); g.arc(cx, cy, 70 + p * 30, 0, 7); g.stroke();
+  const words = ["ARUNIKA", "RUN", "LEBIH", "RINGAN"]; const wi = Math.floor(t / .9) % words.length;
+  g.font = `800 92px ${FD}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.fillText(words[wi], cx, cy);
+  for (let i = 0; i < 16; i++) { const bh = 20 + Math.abs(Math.sin(t * 4 + i * .6)) * 80; g.fillStyle = "rgba(165,140,255,.55)"; g.fillRect(60 + i * 18, h - 40 - bh, 12, bh); }
+  g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = `400 20px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("Nadia K. · Arunika Run · 0:15 loop", 40, 50);
+}, 1024, 576);
+animTex.push(proj);
+plane(4, 2.25, basicTex(proj.t), 0, 1.85, -5.98);
+const projector = box(.4, .16, .32, std("#d7dbe6"), 0, 3.25, -1.6);
+cyl(.015, .015, .3, trackM, 0, 3.45, -1.6);
+{ // beam piramida
+  const g = new THREE.BufferGeometry();
+  const p0 = [0, 3.22, -1.75], c = [[-2, 2.975, -5.97], [2, 2.975, -5.97], [2, .725, -5.97], [-2, .725, -5.97]];
+  const v = []; for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; v.push(...p0, ...a, ...b); }
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.computeVertexNormals();
+  const beam = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: "#c9bfff", transparent: true, opacity: .07, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(beam);
+}
+for (const z of [-3.3, -2.7]) box(3.2, .42, .4, std("#3a4052"), 0, .21, z + .1);
+box(.4, .6, .4, std("#15171d"), -2.9, .3, -5.5); box(.4, .6, .4, std("#15171d"), 2.9, .3, -5.5);
+
+/* ---------- AREA ARTIST TALK ---------- */
+box(3.2, .15, 1.4, std("#2b3040"), -3, .075, -.1);
+const talk = ctex(512, 288, (g, w, h) => {
+  g.fillStyle = "#f4f4f0"; g.fillRect(0, 0, w, h);
+  g.fillStyle = "#0e1018"; g.font = `800 30px ${FD}`; g.fillText("Dari brief", 28, 52); g.fillText("ke render", 28, 88);
+  g.font = `400 15px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("ARTIST TALK · 19.30", 30, 118);
+  g.save(); g.translate(330, 0); bottlePath(g, 0, 260, 200); g.strokeStyle = C.td; g.lineWidth = 2; g.stroke();
+  for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(-92, 260 - i * 25); g.lineTo(92, 260 - i * 25); g.stroke(); } g.restore();
+  g.fillStyle = C.td; g.save(); g.translate(450, 0); bottlePath(g, 0, 260, 200); g.restore(); g.fill();
+  g.font = `400 13px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("wireframe → final", 300, 280);
+});
+box(1.5, .88, .06, std("#07080d"), -3, 1.55, -.6);
+plane(1.44, .82, basicTex(talk.t), -3, 1.55, -.565);
+cyl(.03, .03, 1.1, trackM, -3, .65, -.65); box(.6, .04, .4, trackM, -3, .17, -.65);
+box(.5, .7, .5, std("#e8eaf2"), -1.8, .5, -.1); // podium
+const chairM = std("#556080");
+for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) {
+  const x = -4.4 + c * .7, z = 1.3 + r * .8;
+  box(.44, .06, .42, chairM, x, .45, z); box(.44, .45, .05, chairM, x, .7, z + .21);
+  for (const dx of [-.19, .19]) for (const dz of [-.18, .18]) box(.03, .45, .03, trackM, x + dx, .22, z + dz);
+}
+
+/* ---------- ZONA C: 3D ---------- */
+const prof = [[0, 0], [.42, 0], [.46, .04], [.46, .55], [.4, .7], [.2, .78], [.16, .82], [.16, .92], [.18, .94], [.18, 1], [0, 1]].map(([r, h]) => new THREE.Vector2(r * .12, h * .3));
+const bottleG = new THREE.LatheGeometry(prof, 28);
+const bottles = [];
+const pedM = std("#eef0f6", { roughness: .6 });
+const pedPos = [[5.9, -4.4], [7.7, -4.4], [5.9, -2.3], [7.7, -2.3]];
+const bCols = [C.td, "#ffffff", C.vm, C.mg];
+pedPos.forEach(([x, z], i) => {
+  box(.5, 1.0, .5, pedM, x, .5, z);
+  const tt = cyl(.2, .2, .03, std("#15171d", { metalness: .5 }), x, 1.015, z, scene, 24);
+  const b = new THREE.Mesh(bottleG, new THREE.MeshStandardMaterial({ color: bCols[i], roughness: .2, metalness: .15 }));
+  b.position.set(x, 1.03, z); scene.add(b);
+  if (i % 2 === 0) { const wf = new THREE.Mesh(bottleG, new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: .35 })); wf.scale.setScalar(1.01); b.add(wf); }
+  bottles.push(b);
+  const sp = new THREE.SpotLight("#ffffff", 1.4, 5, .3, .5, 1.5); sp.position.set(x, 3.4, z + .6); sp.target = b; scene.add(sp);
+  // tablet di tiang
+  cyl(.015, .015, 1.05, trackM, x - .45, .52, z + .3, scene, 6);
+  const tb = box(.26, .18, .015, std("#0b0c12"), x - .45, 1.1, z + .32); tb.rotation.x = -.5; tb.rotation.y = -.4;
+  const ts = plane(.23, .15, std(C.td, { emissive: C.td, emissiveIntensity: .5 }), 0, 0, .009, 0, tb);
+});
+const renderPosters = [C.td, C.vm, C.mg].map((col, i) => ctex(300, 420, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#1a2030"); gr.addColorStop(1, "#0b0d14"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.fillStyle = "rgba(255,255,255,.08)"; g.beginPath(); g.ellipse(150, 360, 110, 18, 0, 0, 7); g.fill();
+  bottlePath(g, 150, 360, 260); const bg = g.createLinearGradient(40, 0, 260, 0); bg.addColorStop(0, col); bg.addColorStop(.45, "#ffffff"); bg.addColorStop(1, col); g.fillStyle = bg; g.fill();
+  g.font = `400 13px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(["RENDER 4K · EMBUN", "RENDER 4K · KOPI", "RENDER 4K · ARUNIKA"][i], 20, 30);
+}));
+renderPosters.forEach((p, i) => {
+  const z = -4.6 + i * 1.3;
+  box(.04, 1.0, .74, std("#0b0c12"), 8.97, 1.6, z);
+  plane(.68, .94, basicTex(p.t), 8.94, 1.6, z, -Math.PI / 2);
+});
+plane(4.6, .58, new THREE.MeshBasicMaterial({ map: signTex("ZONA C · 3D MODELING", "pedestal · turntable · render A2", C.td).t, transparent: true, toneMapped: false }), 8.94, 2.85, -3.3, -Math.PI / 2);
+// stasiun VR
+const vrTex = ctex(256, 256, (g, w, h) => { g.fillStyle = "#1b2a36"; g.fillRect(0, 0, w, h); g.strokeStyle = C.td; g.lineWidth = 6; g.strokeRect(6, 6, w - 12, h - 12); g.lineWidth = 3; for (let i = -w; i < w; i += 28) { g.beginPath(); g.moveTo(i, h); g.lineTo(i + h, 0); g.stroke(); } g.fillStyle = "#1b2a36"; g.fillRect(60, 104, 136, 48); g.fillStyle = C.td; g.font = `800 34px ${FD}`; g.textAlign = "center"; g.fillText("VR", 128, 142); });
+const vr = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), std("#fff", { map: vrTex.t, roughness: .6 })); vr.rotation.x = -Math.PI / 2; vr.position.set(7, .012, 1.2); scene.add(vr);
+
+/* ---------- konsumsi ---------- */
+box(1.8, .06, .7, std("#e8eaf2"), 7.6, .78, 4.6);
+for (const dx of [-.8, .8]) for (const dz of [-.3, .3]) box(.04, .78, .04, trackM, 7.6 + dx, .39, 4.6 + dz);
+for (let i = 0; i < 8; i++) cyl(.035, .03, .1, std(i % 2 ? "#f4f4f0" : C.gold), 7 + (i % 4) * .3, .86, 4.45 + Math.floor(i / 4) * .25, scene, 10);
+box(.7, .3, .4, std("#c9741f"), 8.1, .96, 4.6);
+
+/* ---------- pengunjung ---------- */
+const shirts = ["#5b6b8c", "#8c5b6b", "#6b8c5b", "#d0d4e0", "#2f3446", "#a07a4f", "#4f7aa0", "#7a4fa0"];
+const skin = std("#c48b62", { roughness: .8 });
+const panitiaM = std(C.green);
+function person(x, z, ry, i, seated = false, panitia = false) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  const pants = std("#22263a"); const shirt = panitia ? panitiaM : std(shirts[i % shirts.length]);
+  const by = seated ? -.38 : 0;
+  if (!seated) { cyl(.07, .06, .82, pants, -.08, .41, 0, g, 8); cyl(.07, .06, .82, pants, .08, .41, 0, g, 8); }
+  else { box(.3, .14, .4, pants, 0, .52, -.12, g); cyl(.06, .05, .45, pants, -.08, .22, -.3, g, 8); cyl(.06, .05, .45, pants, .08, .22, -.3, g, 8); }
+  cyl(.17, .19, .62, shirt, 0, 1.13 + by, 0, g, 12);
+  const hd = new THREE.Mesh(new THREE.SphereGeometry(.11, 14, 10), skin); hd.position.set(0, 1.58 + by, 0); g.add(hd);
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(.115, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), std("#1a1410")); hair.position.copy(hd.position); g.add(hair);
+  return g;
+}
+let pi = 0;
+// luar
+person(-2.3, 9.9, Math.PI * .8, pi++); person(2.5, 11.8, Math.PI + .3, pi++);
+// registrasi
+person(4.3, 5.25, Math.PI, pi++, false, true); person(3.6, 3.9, 0, pi++);
+// zona A
+person(-7.9, -1.2, -Math.PI / 2, pi++); person(-7.7, 1.5, -Math.PI / 2 + .2, pi++); person(-7.95, 3.8, -Math.PI / 2, pi++);
+person(-6.6, -1.3, -Math.PI / 2, pi++, true);
+// artist talk
+person(-1.8, -.1, 0, pi++, false, true);
+[[-4.4, 1.3], [-3.7, 1.3], [-2.3, 1.3], [-3, 2.1], [-1.6, 2.1], [-4.4, 2.1]].forEach(([x, z]) => person(x, z, Math.PI, pi++, true));
+// zona B
+[[-1, -3.2], [.4, -3.2], [1.2, -2.6], [-.6, -2.6]].forEach(([x, z]) => person(x, z, Math.PI, pi++, true));
+// zona C
+person(6.3, -3.4, Math.PI * .8, pi++); person(7.2, -1.6, Math.PI * 1.1, pi++);
+const vrP = person(7, 1.2, Math.PI * .6, pi++); box(.22, .1, .14, std("#f4f4f0"), 0, 1.6, .1, vrP);
+person(6.0, 1.9, -Math.PI * .3, pi++, false, true);
+// konsumsi
+person(7.2, 5.2, Math.PI, pi++); person(8.2, 3.9, 0, pi++);
+// pejalan
+const walkers = [
+  { g: person(0, 0, 0, pi++), f: t => [-7.2, Math.sin(t * .35) * 3.4], },
+  { g: person(0, 0, 0, pi++), f: t => [1.5 + Math.sin(t * .25) * 2.5, 1.2 + Math.cos(t * .25) * 1.4] },
+  { g: person(0, 0, 0, pi++), f: t => [-5.6 + Math.sin(t * .3) * 1.2, 2.6 + Math.cos(t * .3) * .9] },
+];
+
+/* ---------- jalur kamera ---------- */
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const keys = [
+  [V(0, 1.8, 17), V(0, 2.0, 7.4)],
+  [V(0, 1.7, 13), V(0, 2.0, 7.4)],
+  [V(-.8, 1.6, 10.9), V(-3.3, 1.35, 7.7)],
+  [V(.6, 1.6, 9.3), V(3.4, 1.1, 7.3)],
+  [V(.6, 1.6, 4.9), V(4.3, 1.0, 4.7)],
+  [V(-3.4, 1.6, 3.1), V(-9, 1.55, .3)],
+  [V(-6.1, 1.6, -.2), V(-9, 1.5, -2.2)],
+  [V(-2.2, 1.95, 3.7), V(-3, 1.3, -.4)],
+  [V(0, 1.6, -1.2), V(0, 1.85, -6)],
+  [V(3.6, 1.7, -.4), V(6.8, 1.1, -3.4)],
+  [V(3.6, 1.8, .2), V(7.3, .7, 2.8)],
+  [V(3, 5, 6.5), V(0, 0, -.5)],
+  [V(0, 14, 9), V(0, 0, -.6)],
+];
+const posC = new THREE.CatmullRomCurve3(keys.map(k => k[0]), false, "centripetal");
+const lookC = new THREE.CatmullRomCurve3(keys.map(k => k[1]), false, "centripetal");
+const caps = [
+  [2.4, 5, "Luar ruang · pintu masuk", "Gate masuk (gapura)", "Rangka hollow + print albatros 4,6 × 3,6 m · berisi key visual & zona", C.vm],
+  [5, 7.6, "Luar ruang", "Poster stand (tripod)", "Poster pameran & poster karya iklan, foam board A1 di standing tripod", C.mg],
+  [7.6, 10.4, "Luar ruang · penunjuk arah", "Totem kubus", "Kubus 56 cm ditumpuk 4, tiap sisi berisi arah zona & pola key visual", C.mg],
+  [10.4, 13.5, "Dalam ruang", "Registrasi", "Buku tamu digital, QR katalog, daftar harga lisensi", C.green],
+  [13.5, 19.5, "Zona A", "Video Marketing", "4 TV 55\" · headphone · label karya dengan durasi & resolusi", C.vm],
+  [19.5, 22.5, "Area tengah", "Artist talk", "TV 65\" untuk breakdown proses · 10 kursi", C.gold],
+  [22.5, 25.5, "Zona B", "Motion Graphic", "Ruang proyeksi 4 × 2,25 m · tirai blackout · speaker stereo", C.mg],
+  [25.5, 28.5, "Zona C", "3D Modeling", "Pedestal + turntable · tablet model 3D · render A2 di dinding", C.td],
+  [28.5, 31.5, "Zona C & sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2 m · meja konsumsi jauh dari perangkat", C.td],
+  [31.5, 36.1, "Tampak atas", "Denah keseluruhan 18 × 12 m", "Alur: gate → registrasi → Zona A → talk → Zona B → Zona C", C.fg],
+];
+const capEl = document.getElementById("cap"), capEb = document.getElementById("capEb"), capT = document.getElementById("capT"), capS = document.getElementById("capS");
+const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
+let lastCap = -1;
+const pad = n => String(n).padStart(2, "0");
+
+function renderAt(t) {
+  t = Math.max(0, Math.min(DUR, t));
+  for (const a of animTex) { a.draw(a.g, a.c.width, a.c.height, t); a.t.needsUpdate = true; }
+  bottles.forEach((b, i) => b.rotation.y = t * (.6 + i * .1));
+  walkers.forEach(w => {
+    const [x, z] = w.f(t), [x2, z2] = w.f(t + .05);
+    w.g.position.set(x, Math.abs(Math.sin(t * 7)) * .02, z); w.g.rotation.y = Math.atan2(x2 - x, z2 - z);
+  });
+  const u = t / DUR;
+  const uu = u;
+  camera.position.copy(posC.getPoint(uu));
+  camera.lookAt(lookC.getPoint(uu));
+  ceiling.visible = camera.position.y < 3.4;
+  const cl = v => Math.max(0, Math.min(1, v));
+  titleEl.style.opacity = cl((2.4 - t) / .5);
+  let ci = caps.findIndex(c => t >= c[0] && t < c[1]);
+  capEl.style.opacity = ci < 0 ? 0 : cl(Math.min((t - caps[ci][0]) / .35, (caps[ci][1] - t) / .35, 1));
+  if (ci >= 0 && ci === caps.length - 1) capEl.style.opacity = cl((t - caps[ci][0]) / .35);
+  if (ci >= 0 && ci !== lastCap) { const c = caps[ci]; capEb.textContent = c[2]; capT.textContent = c[3]; capS.textContent = c[4]; capEl.style.setProperty("--c", c[5]); lastCap = ci; }
+  const f = Math.floor(t * FPS);
+  tcEl.textContent = `00:00:${pad(Math.floor(f / FPS))}:${pad(f % FPS)}`;
+  barEl.style.width = (u * 100) + "%";
+  renderer.render(scene, camera);
+}
+
+document.getElementById("loading").remove();
+window.SIM = { renderAt, DUR, FPS, ready: true };
+
+if (!RENDER_MODE) {
+  const btn = document.getElementById("play"), scrub = document.getElementById("scrub");
+  let t = 0, playing = !matchMedia("(prefers-reduced-motion: reduce)").matches, last = performance.now();
+  btn.textContent = playing ? "Jeda" : "Putar";
+  btn.onclick = () => { playing = !playing; btn.textContent = playing ? "Jeda" : "Putar"; last = performance.now(); };
+  scrub.oninput = () => { t = scrub.value / 1000 * DUR; renderAt(t); };
+  (function loop(now) {
+    if (playing) { t += (now - last) / 1000; if (t > DUR) t = 0; scrub.value = Math.round(t / DUR * 1000); renderAt(t); }
+    last = now; requestAnimationFrame(loop);
+  })(performance.now());
+  renderAt(0);
+}
+})();
+</script>
+</body>
+</html>
