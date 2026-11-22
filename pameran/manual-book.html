@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Manual Book Panitia RENDER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Manual book A4 · satu bab mulai di halaman baru · warna aksen = disiplin/kelompok */
+:root {
+  --ink: #141726; --muted: #5a6078; --line: #d5d8e5; --soft: #eef0f6; --paper: #ffffff;
+  --vm: #d9472a; --mg: #6d4fd8; --td: #0f86b8; --k4: #2f7d4f; --tally: #e0272f;
+  --f-display: "Unbounded", "Arial Black", sans-serif;
+  --f-body: "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", "Consolas", monospace;
+}
+@page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+@page :first { margin: 0; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 9.6pt; line-height: 1.5; }
+h1, h2, h3, h4 { font-family: var(--f-display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h2 { font-size: 20pt; font-weight: 800; letter-spacing: -.01em; }
+h3 { font-size: 11.5pt; font-weight: 700; margin-top: 14pt; margin-bottom: 6pt; }
+h3, h4 { break-after: avoid; }
+h4 { font-size: 9.5pt; font-weight: 700; margin: 10pt 0 4pt; }
+p { margin: 0 0 6pt; }
+.mono { font-family: var(--f-mono); }
+.eyebrow { font-family: var(--f-mono); font-size: 7.5pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.chapter { break-before: page; }
+.chap-head { display: grid; gap: 6pt; padding-bottom: 10pt; margin-bottom: 12pt; border-bottom: 2px solid var(--ink); }
+.chap-head .num { font-family: var(--f-mono); font-size: 8pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); font-size: 10pt; max-width: 150mm; }
+.keep { break-inside: avoid; }
+
+/* COVER */
+.cover { width: 210mm; height: 297mm; background: #0e1018; color: #eef0fa; position: relative; overflow: hidden; break-after: page; }
+.cover .in { position: absolute; inset: 22mm 20mm; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .logo { font-family: var(--f-display); font-weight: 800; font-size: 64pt; letter-spacing: -.02em; line-height: 1; position: relative; }
+.cover .logo span { position: absolute; left: 0; top: 0; opacity: .9; }
+.cover .tag { font-family: var(--f-mono); font-size: 9pt; letter-spacing: .16em; text-transform: uppercase; color: #a3aac2; }
+.cover h1 { font-size: 26pt; font-weight: 700; margin-top: 8mm; max-width: 150mm; }
+.cover .sub { font-size: 12pt; color: #c7cce0; margin-top: 4mm; max-width: 140mm; }
+.cover .bars { display: flex; height: 5px; margin: 8mm 0; }
+.cover .bars i { flex: 1; }
+.cover .meta { display: grid; grid-template-columns: repeat(3, auto); gap: 4mm 12mm; justify-content: start; font-size: 9pt; }
+.cover .meta b { display: block; font-family: var(--f-mono); font-weight: 400; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: #a3aac2; }
+.cover svg { position: absolute; right: -14mm; top: 118mm; width: 130mm; opacity: .9; }
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; font-size: 8.6pt; margin: 4pt 0 10pt; }
+th { text-align: left; font-family: var(--f-mono); font-size: 7pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1.5px solid var(--ink); padding: 5pt 6pt; vertical-align: bottom; }
+td { border-bottom: 1px solid var(--line); padding: 5pt 6pt; vertical-align: top; }
+tr { break-inside: avoid; }
+td.n, th.n { width: 7mm; color: var(--muted); font-family: var(--f-mono); }
+td.c, th.c { width: 9mm; text-align: center; }
+td.q { white-space: nowrap; font-family: var(--f-mono); }
+.box { display: inline-block; width: 10px; height: 10px; border: 1.2px solid var(--ink); border-radius: 2px; }
+.pill { display: inline-block; font-family: var(--f-mono); font-size: 7pt; padding: 1pt 5pt; border-radius: 3pt; color: #fff; white-space: nowrap; }
+.k1 { background: var(--mg); } .k2 { background: var(--vm); } .k3 { background: var(--td); } .k4 { background: var(--k4); }
+
+/* TOC */
+.toc { display: grid; gap: 0; margin-top: 8pt; }
+.toc div { display: grid; grid-template-columns: 14mm 1fr auto; gap: 4mm; padding: 6pt 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.toc .tn { font-family: var(--f-mono); color: var(--muted); }
+.toc .tt { font-weight: 600; }
+.toc .tt small { display: block; font-weight: 400; color: var(--muted); font-size: 8.4pt; }
+
+.note { border-left: 3px solid var(--ink); background: var(--soft); padding: 7pt 10pt; font-size: 8.8pt; margin: 8pt 0; break-inside: avoid; }
+.note b { font-family: var(--f-mono); font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 2pt; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+.cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+.card { border: 1px solid var(--line); border-radius: 6pt; padding: 8pt 10pt; break-inside: avoid; }
+.card h4 { margin-top: 0; }
+ul.tight { margin: 0; padding-left: 13pt; } ul.tight li { margin-bottom: 2pt; }
+
+/* GROUP PAGE */
+.ghead { color: #fff; border-radius: 6pt; padding: 12pt 14pt; display: grid; grid-template-columns: 1fr auto; gap: 4pt 10mm; align-items: end; margin-bottom: 10pt; }
+.ghead .gn { font-family: var(--f-mono); font-size: 8pt; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.ghead h2 { font-size: 18pt; color: #fff; }
+.ghead .pj { text-align: right; font-size: 9pt; }
+.ghead .pj b { display: block; font-family: var(--f-display); font-size: 13pt; }
+.out3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 4pt 0 6pt; }
+.out3 .card { border-top: 4px solid; }
+.out3 .card .eyebrow { margin-bottom: 3pt; display: block; }
+.out3 .spec { font-family: var(--f-mono); font-size: 7.4pt; color: var(--muted); margin-top: 4pt; }
+
+/* misc */
+.chart svg { width: 100%; height: auto; display: block; }
+.sign { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; margin-top: 16pt; }
+.sign div { border-top: 1px solid var(--ink); padding-top: 4pt; font-size: 8pt; color: var(--muted); }
+.form-line { border-bottom: 1px solid var(--line); height: 18pt; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <svg viewBox="0 0 400 400" aria-hidden="true">
+    <circle cx="200" cy="200" r="150" fill="none" stroke="#6d4fd8" stroke-width="3"/>
+    <circle cx="200" cy="200" r="104" fill="none" stroke="#0f86b8" stroke-width="3" stroke-dasharray="6 10"/>
+    <path d="M180 120 L180 96 L220 96 L220 120 Q238 132 238 158 L238 290 Q238 304 224 304 L176 304 Q162 304 162 290 L162 158 Q162 132 180 120 Z" fill="none" stroke="#eef0fa" stroke-width="2.5"/>
+    <g stroke="#eef0fa" stroke-width="1" opacity=".6"><line x1="162" y1="180" x2="238" y2="180"/><line x1="162" y1="220" x2="238" y2="220"/><line x1="162" y1="260" x2="238" y2="260"/><line x1="200" y1="120" x2="200" y2="304"/></g>
+    <circle cx="350" cy="200" r="12" fill="#d9472a"/><circle cx="200" cy="50" r="8" fill="#0f86b8"/><circle cx="96" cy="306" r="10" fill="#6d4fd8"/>
+  </svg>
+  <div class="in">
+    <div>
+      <div class="tag">Pameran karya digital · video marketing · motion graphic · 3D modeling</div>
+      <div class="logo" style="margin-top:14mm">
+        <span style="color:#d9472a;transform:translateX(-3px)">RENDER</span>
+        <span style="color:#0f86b8;transform:translateX(3px)">RENDER</span>
+        <span style="position:relative;color:#eef0fa">RENDER</span>
+      </div>
+      <h1>Manual Book Panitia</h1>
+      <p class="sub">Daftar kebutuhan pameran dan pembagian tugas kelompok, dari persiapan sampai pameran ditutup.</p>
+      <div class="bars"><i style="background:#d9472a"></i><i style="background:#6d4fd8"></i><i style="background:#0f86b8"></i><i style="background:#2f7d4f"></i></div>
+    </div>
+    <div class="meta">
+      <div><b>Tema</b>Produk dalam Gerak</div>
+      <div><b>Pameran</b>12–19 Desember 2026*</div>
+      <div><b>Panitia</b>4 kelompok · 17 orang</div>
+      <div><b>Versi</b>1.0 · November 2026</div>
+      <div><b>Tempat</b>Galeri Kampus*</div>
+      <div><b>Catatan</b>*contoh, sesuaikan</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TOC ================= -->
+<section>
+  <div class="chap-head"><span class="num">Isi buku</span><h2>Daftar isi</h2></div>
+  <div class="toc">
+    <div><span class="tn">Bab 1</span><span class="tt">Gambaran pameran<small>Tema, jenis karya, zona ruang, jadwal utama</small></span><span class="mono">3</span></div>
+    <div><span class="tn">Bab 2</span><span class="tt">Struktur panitia &amp; pembagian kelompok<small>Bagan koordinasi, ringkasan tugas, halaman tiap kelompok</small></span><span class="mono">5</span></div>
+    <div><span class="tn">Bab 3</span><span class="tt">Daftar kebutuhan pameran<small>Sembilan kategori kebutuhan lengkap dengan spesifikasi, jumlah, dan penanggung jawab</small></span><span class="mono">10</span></div>
+    <div><span class="tn">Bab 4</span><span class="tt">Standar file video &amp; label karya<small>Setting ekspor, penamaan file, struktur folder, isi label</small></span><span class="mono">14</span></div>
+    <div><span class="tn">Bab 5</span><span class="tt">Timeline persiapan<small>H-30 sampai H+3 per kelompok</small></span><span class="mono">16</span></div>
+    <div><span class="tn">Bab 6</span><span class="tt">Hari H &amp; operasional harian<small>Rundown opening, jadwal jaga, SOP, penanganan masalah</small></span><span class="mono">17</span></div>
+    <div><span class="tn">Lampiran</span><span class="tt">Formulir<small>Kontak panitia, laporan harian, serah terima</small></span><span class="mono">19</span></div>
+  </div>
+
+  <h3>Cara memakai buku ini</h3>
+  <div class="cols2">
+    <div>
+      <p>Buku ini pegangan bersama seluruh panitia. Setiap kelompok cukup membaca Bab 1, halaman kelompoknya sendiri di Bab 2, dan baris kebutuhan yang bertanda kelompoknya di Bab 3.</p>
+      <p>Kolom <span class="box"></span> di setiap tabel diisi centang saat barang atau pekerjaan sudah siap. PJ kelompok mengecek kolom ini di rapat PJ mingguan.</p>
+    </div>
+    <div>
+      <p>Tanda kelompok di setiap tabel:</p>
+      <p><span class="pill k1">K1</span> Kuratorial &amp; administrasi · PJ Tegar<br>
+      <span class="pill k2">K2</span> Publikasi &amp; dokumentasi · PJ Rafly<br>
+      <span class="pill k3">K3</span> Display &amp; teknis ruang · PJ Fuji<br>
+      <span class="pill k4">K4</span> Acara &amp; operasional · PJ Rahma</p>
+    </div>
+  </div>
+  <div class="note"><b>Penting</b>Tanggal, tempat, harga, dan jumlah perangkat di buku ini adalah contoh perencanaan. Sesuaikan dengan keputusan rapat dan anggaran, lalu perbarui versi buku.</div>
+</section>
+
+<!-- ================= BAB 1 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 1</span><h2>Gambaran pameran</h2><p class="lede">RENDER memamerkan karya iklan dan produk dalam bentuk video. Ketiga disiplin, termasuk 3D modeling, ditampilkan sebagai video yang diputar berulang di layar atau proyektor.</p></div>
+
+  <h3>Tema</h3>
+  <p><b>Produk dalam Gerak.</b> Setiap karya menceritakan sebuah produk lewat gerak, cahaya, dan bentuk. Produk boleh nyata (UMKM sekitar kampus, dengan izin) atau fiktif, asalkan ada brief yang jelas: produk apa, untuk siapa, pesan apa.</p>
+
+  <h3>Jenis karya</h3>
+  <table>
+    <thead><tr><th>Disiplin</th><th>Bentuk karya</th><th>Durasi</th><th>Format</th><th>Cara tampil</th></tr></thead>
+    <tbody>
+      <tr><td><b style="color:var(--vm)">Video marketing</b></td><td>Iklan live action, video produk, testimoni, iklan media sosial</td><td class="q">15–60 dtk</td><td class="q">16:9 / 9:16</td><td>Zona A · TV dinding + headphone</td></tr>
+      <tr><td><b style="color:var(--mg)">Motion graphic</b></td><td>Animasi 2D, kinetic typography, explainer, logo animation</td><td class="q">10–60 dtk</td><td class="q">16:9</td><td>Zona B · proyektor + speaker</td></tr>
+      <tr><td><b style="color:var(--td)">3D modeling</b></td><td>Animasi 3D produk: CGI ad, packshot, turntable, exploded view</td><td class="q">10–30 dtk</td><td class="q">16:9</td><td>Zona C · TV dinding, mock-up di pedestal</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>3D modeling = video</b>Karya 3D dikumpulkan sebagai file video animasi (MP4), bukan gambar diam atau file model. File model (.blend, .fbx) hanya disertakan sebagai arsip atau untuk dijual bersama lisensi.</div>
+
+  <h3>Zona ruang</h3>
+  <div class="cols3">
+    <div class="card" style="border-top:4px solid var(--vm)"><h4>Zona A · Video marketing</h4><p>4 TV 55" di dinding kiri, headphone per layar, label di kanan layar, bangku.</p></div>
+    <div class="card" style="border-top:4px solid var(--mg)"><h4>Zona B · Motion graphic</h4><p>Ruang proyeksi di dinding belakang, layar 4 × 2,25 m, tirai blackout, speaker stereo.</p></div>
+    <div class="card" style="border-top:4px solid var(--td)"><h4>Zona C · 3D modeling</h4><p>3 TV 55" di dinding kanan memutar animasi 3D, mock-up produk di 4 pedestal.</p></div>
+  </div>
+  <p style="margin-top:8pt">Pendukung: gate masuk, poster stand, dan totem kubus di depan; registrasi dekat pintu; area artist talk di tengah; meja teknis dekat panel listrik; konsumsi di sudut kanan depan, jauh dari perangkat.</p>
+
+  <h3>Jadwal utama (contoh)</h3>
+  <table>
+    <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Kelompok</th></tr></thead>
+    <tbody>
+      <tr><td class="q">H-30 · 12 Nov</td><td>Rapat perdana, finalisasi tema, buka pengumpulan karya</td><td>Semua</td></tr>
+      <tr><td class="q">H-14 · 28 Nov</td><td>Batas akhir pengumpulan file master karya</td><td><span class="pill k1">K1</span></td></tr>
+      <tr><td class="q">H-7 · 5 Des</td><td>Publikasi dimulai, undangan dikirim</td><td><span class="pill k2">K2</span></td></tr>
+      <tr><td class="q">H-1 · 11 Des</td><td>Instalasi, pemasangan gate &amp; totem, gladi</td><td><span class="pill k3">K3</span> <span class="pill k4">K4</span></td></tr>
+      <tr><td class="q">H · 12 Des</td><td>Opening 19.00 WIB</td><td>Semua</td></tr>
+      <tr><td class="q">13–19 Des</td><td>Pameran dibuka 10.00–21.00 WIB</td><td>Bergilir</td></tr>
+      <tr><td class="q">19 Des malam</td><td>Penutupan dan bongkar</td><td>Semua</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================= BAB 2 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 2</span><h2>Struktur panitia &amp; pembagian kelompok</h2><p class="lede">Empat kelompok, masing-masing dipimpin satu PJ. Setiap kelompok memegang satu bidang kebutuhan pameran dan tetap menghasilkan karya video di ketiga disiplin.</p></div>
+
+  <div class="chart keep">
+    <svg viewBox="0 0 700 250" role="img" aria-label="Bagan koordinasi panitia: forum PJ di tengah, terhubung ke empat kelompok">
+      <rect x="250" y="10" width="200" height="52" rx="8" fill="#141726"/>
+      <text x="350" y="32" text-anchor="middle" font-family="Unbounded, Arial Black" font-size="13" font-weight="700" fill="#fff">Forum PJ</text>
+      <text x="350" y="50" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#c7cce0">rapat mingguan · dosen pengampu</text>
+      <g stroke="#141726" stroke-width="1.5" fill="none"><path d="M350 62 V90 H88 V112"/><path d="M350 90 H263 V112"/><path d="M350 90 H437 V112"/><path d="M350 90 H612 V112"/></g>
+      <g font-family="Plus Jakarta Sans, Arial" font-size="10">
+        <rect x="10" y="112" width="156" height="128" rx="8" fill="#6d4fd8"/><text x="22" y="134" fill="#fff" font-family="JetBrains Mono" font-size="8.5">KELOMPOK 1</text><text x="22" y="152" fill="#fff" font-weight="700" font-size="11">Kuratorial &amp; admin</text><text x="22" y="174" fill="#fff">PJ Tegar</text><text x="22" y="190" fill="#fff" opacity=".85">Riani I. · Intan</text><text x="22" y="205" fill="#fff" opacity=".85">Nisa · Wendi</text>
+        <rect x="185" y="112" width="156" height="128" rx="8" fill="#d9472a"/><text x="197" y="134" fill="#fff" font-family="JetBrains Mono" font-size="8.5">KELOMPOK 2</text><text x="197" y="152" fill="#fff" font-weight="700" font-size="11">Publikasi &amp; dokumentasi</text><text x="197" y="174" fill="#fff">PJ Rafly</text><text x="197" y="190" fill="#fff" opacity=".85">Riani P. · Putri</text><text x="197" y="205" fill="#fff" opacity=".85">Shalwa A. · Nadia</text>
+        <rect x="359" y="112" width="156" height="128" rx="8" fill="#0f86b8"/><text x="371" y="134" fill="#fff" font-family="JetBrains Mono" font-size="8.5">KELOMPOK 3</text><text x="371" y="152" fill="#fff" font-weight="700" font-size="11">Display &amp; teknis ruang</text><text x="371" y="174" fill="#fff">PJ Fuji</text><text x="371" y="190" fill="#fff" opacity=".85">Ronna · Marwa</text><text x="371" y="205" fill="#fff" opacity=".85">Sinta</text>
+        <rect x="534" y="112" width="156" height="128" rx="8" fill="#2f7d4f"/><text x="546" y="134" fill="#fff" font-family="JetBrains Mono" font-size="8.5">KELOMPOK 4</text><text x="546" y="152" fill="#fff" font-weight="700" font-size="11">Acara &amp; operasional</text><text x="546" y="174" fill="#fff">PJ Rahma</text><text x="546" y="190" fill="#fff" opacity=".85">Heri · Shalwa H.</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3>Ringkasan tugas</h3>
+  <table>
+    <thead><tr><th>Kelompok</th><th>Bidang</th><th>Mengurus kebutuhan (Bab 3)</th><th>Output karya video</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill k1">K1</span> 5 orang</td><td>Kuratorial &amp; administrasi</td><td>A Konsep · B File karya · G Administrasi</td><td>Profil pameran, katalog animasi, walkthrough galeri virtual 3D</td></tr>
+      <tr><td><span class="pill k2">K2</span> 5 orang</td><td>Publikasi &amp; dokumentasi</td><td>F Media acara (desain) · H Publikasi</td><td>Teaser &amp; aftermovie, poster bergerak, animasi 3D produk/logo</td></tr>
+      <tr><td><span class="pill k3">K3</span> 4 orang</td><td>Display &amp; teknis ruang</td><td>C Perangkat · D Alat instalasi · E Ruang &amp; cahaya · F (pasang)</td><td>Video loop Zona A, konten proyeksi, simulasi 3D ruang</td></tr>
+      <tr><td><span class="pill k4">K4</span> 3 orang</td><td>Acara &amp; operasional</td><td>I Acara &amp; operasional</td><td>Countdown &amp; highlight, lower third, bumper 3D opening</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Aturan koordinasi</h3>
+  <ul class="tight">
+    <li>Forum PJ rapat setiap minggu (30 menit): cek kolom <span class="box"></span> Bab 3, masalah, dan keputusan yang butuh kelompok lain.</li>
+    <li>Permintaan antar kelompok lewat PJ, ditulis di grup panitia dengan tenggat yang jelas.</li>
+    <li>Semua file disimpan di folder bersama dengan struktur di Bab 4. File di laptop pribadi dianggap belum dikumpulkan.</li>
+    <li>Kelompok 4 paling kecil (3 orang); saat opening, Kelompok 1 membantu registrasi dan Kelompok 2 membantu MC dengan materi layar.</li>
+  </ul>
+  <div class="note"><b>Peran anggota</b>Peran per anggota di halaman berikut adalah usulan. Kelompok boleh menukar peran, asalkan semua tanggung jawab tetap punya pemegang.</div>
+</section>
+
+<!-- K1 -->
+<section class="chapter">
+  <div class="ghead" style="background:var(--mg)"><div><span class="gn">Bab 2 · Kelompok 1</span><h2>Kuratorial &amp; administrasi</h2></div><div class="pj">PJ<b>Tegar</b></div></div>
+  <p>Menjaga isi pameran: tema, kurasi, teks, karya yang masuk, dan semua dokumen. Kelompok ini pintu masuk karya dan pintu keluar transaksi.</p>
+  <h4>Anggota &amp; peran usulan</h4>
+  <table><thead><tr><th class="n">#</th><th>Nama</th><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>
+    <tr><td class="n">1</td><td><b>Tegar</b> (PJ)</td><td>Kurator utama</td><td>Tema, kurasi akhir, teks kuratorial, sambutan kurator saat opening</td></tr>
+    <tr><td class="n">2</td><td>Riani I.</td><td>Penulis &amp; editor</td><td>Mengumpulkan dan menyunting artist statement, biodata seniman</td></tr>
+    <tr><td class="n">3</td><td>Intan</td><td>Katalog digital</td><td>Menyusun katalog web/PDF, QR, thumbnail dan link video</td></tr>
+    <tr><td class="n">4</td><td>Nisa</td><td>Label &amp; harga</td><td>Label karya A6, daftar harga lisensi, red dot, kuitansi</td></tr>
+    <tr><td class="n">5</td><td>Wendi</td><td>Administrasi karya</td><td>Pengumpulan file master, cek standar Bab 4, buku tamu, surat serah terima</td></tr>
+  </tbody></table>
+  <h4>Output karya video</h4>
+  <div class="out3">
+    <div class="card" style="border-top-color:var(--vm)"><span class="eyebrow">Video marketing</span>Video profil pameran dan wawancara kurator<div class="spec">60–120 dtk · 16:9 · H-7</div></div>
+    <div class="card" style="border-top-color:var(--mg)"><span class="eyebrow">Motion graphic</span>Intro katalog beranimasi dan teks kuratorial bergerak<div class="spec">20–30 dtk · 16:9 · H-5</div></div>
+    <div class="card" style="border-top-color:var(--td)"><span class="eyebrow">3D modeling</span>Video walkthrough animasi 3D galeri virtual<div class="spec">30–45 dtk · 16:9 · H-5</div></div>
+  </div>
+  <h4>Hasil kerja yang harus diserahkan</h4>
+  <table><thead><tr><th>Hasil kerja</th><th>Tenggat</th><th>Diserahkan ke</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td>Brief kuratorial 1 halaman dan aturan pengumpulan karya</td><td class="q">H-28</td><td>Semua kelompok</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Daftar final karya (judul, seniman, disiplin, durasi, zona)</td><td class="q">H-12</td><td><span class="pill k3">K3</span> <span class="pill k2">K2</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>File master semua karya, sudah dicek standar Bab 4</td><td class="q">H-10</td><td><span class="pill k3">K3</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Teks kuratorial + artist statement final</td><td class="q">H-10</td><td><span class="pill k2">K2</span> (rilis pers)</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Desain label karya siap cetak</td><td class="q">H-6</td><td><span class="pill k2">K2</span> (cetak)</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Katalog digital online + QR</td><td class="q">H-5</td><td><span class="pill k2">K2</span> <span class="pill k3">K3</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Buku tamu tablet + daftar harga + kuitansi + red dot</td><td class="q">H-1</td><td><span class="pill k4">K4</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Rekap buku tamu dan transaksi</td><td class="q">H+3</td><td>Forum PJ</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<!-- K2 -->
+<section class="chapter">
+  <div class="ghead" style="background:var(--vm)"><div><span class="gn">Bab 2 · Kelompok 2</span><h2>Publikasi &amp; dokumentasi</h2></div><div class="pj">PJ<b>Rafly</b></div></div>
+  <p>Membuat pameran dikenal sebelum dibuka dan terarsip setelah ditutup. Kelompok ini juga pemegang identitas visual RENDER dan desain semua media cetak.</p>
+  <h4>Anggota &amp; peran usulan</h4>
+  <table><thead><tr><th class="n">#</th><th>Nama</th><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>
+    <tr><td class="n">1</td><td><b>Rafly</b> (PJ)</td><td>Art director</td><td>Identitas visual, key visual, persetujuan semua desain</td></tr>
+    <tr><td class="n">2</td><td>Riani P.</td><td>Video editor</td><td>Teaser 15 dtk, potongan karya untuk Story, aftermovie</td></tr>
+    <tr><td class="n">3</td><td>Putri</td><td>Desain cetak</td><td>Poster, gate, totem, poster stand, signage; urus percetakan</td></tr>
+    <tr><td class="n">4</td><td>Shalwa A.</td><td>Media sosial &amp; humas</td><td>Jadwal konten, undangan, rilis pers, kontak media</td></tr>
+    <tr><td class="n">5</td><td>Nadia</td><td>Dokumentasi</td><td>Foto &amp; video opening, harian, screen capture karya</td></tr>
+  </tbody></table>
+  <h4>Output karya video</h4>
+  <div class="out3">
+    <div class="card" style="border-top-color:var(--vm)"><span class="eyebrow">Video marketing</span>Teaser pameran dan aftermovie<div class="spec">15 dtk (9:16, 16:9) · H-7 / 60–90 dtk · H+5</div></div>
+    <div class="card" style="border-top-color:var(--mg)"><span class="eyebrow">Motion graphic</span>Poster bergerak untuk Reels/Story, bumper logo RENDER<div class="spec">5–10 dtk · 9:16 · H-10</div></div>
+    <div class="card" style="border-top-color:var(--td)"><span class="eyebrow">3D modeling</span>Video animasi 3D produk/logo; frame terbaiknya dipakai sebagai key visual cetak<div class="spec">10–15 dtk · 16:9 · H-14</div></div>
+  </div>
+  <h4>Hasil kerja yang harus diserahkan</h4>
+  <table><thead><tr><th>Hasil kerja</th><th>Tenggat</th><th>Diserahkan ke</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td>Identitas visual: logo, warna, huruf, key visual</td><td class="q">H-21</td><td>Semua kelompok</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Desain gate, totem, poster stand, signage final (file cetak)</td><td class="q">H-10</td><td>Percetakan, <span class="pill k3">K3</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Poster digital + jadwal konten 14 hari</td><td class="q">H-14</td><td>Forum PJ</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Teaser dan undangan digital</td><td class="q">H-7</td><td>Media sosial, <span class="pill k4">K4</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Rilis pers ke media lokal/kampus</td><td class="q">H-5</td><td>Media</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Semua cetakan diterima dan dicek</td><td class="q">H-2</td><td><span class="pill k3">K3</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Foto &amp; video dokumentasi terpilah</td><td class="q">H+3</td><td>Folder bersama</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<!-- K3 -->
+<section class="chapter">
+  <div class="ghead" style="background:var(--td)"><div><span class="gn">Bab 2 · Kelompok 3</span><h2>Display &amp; teknis ruang</h2></div><div class="pj">PJ<b>Fuji</b></div></div>
+  <p>Membuat setiap karya video bisa tampil dengan baik: ruang, listrik, layar, proyektor, suara, cahaya, dan pemasangan media fisik. Kelompok ini juga tim teknis selama pameran.</p>
+  <h4>Anggota &amp; peran usulan</h4>
+  <table><thead><tr><th class="n">#</th><th>Nama</th><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>
+    <tr><td class="n">1</td><td><b>Fuji</b> (PJ)</td><td>Venue &amp; denah</td><td>Negosiasi venue, denah final, alur pengunjung, koordinasi instalasi</td></tr>
+    <tr><td class="n">2</td><td>Ronna</td><td>Perangkat &amp; listrik</td><td>Sewa/pinjam TV, proyektor, player; hitung daya, stop kontak, UPS</td></tr>
+    <tr><td class="n">3</td><td>Marwa</td><td>Instalasi display</td><td>Bracket TV, pedestal, partisi, gate, totem, poster stand, label</td></tr>
+    <tr><td class="n">4</td><td>Sinta</td><td>Cahaya, audio &amp; uji putar</td><td>Lampu, speaker, headphone, uji semua file di perangkat asli, cadangan file</td></tr>
+  </tbody></table>
+  <h4>Output karya video</h4>
+  <div class="out3">
+    <div class="card" style="border-top-color:var(--vm)"><span class="eyebrow">Video marketing</span>Playlist loop Zona A siap putar, dengan slate judul antar karya<div class="spec">sesuai karya · 16:9 · H-3</div></div>
+    <div class="card" style="border-top-color:var(--mg)"><span class="eyebrow">Motion graphic</span>Konten proyeksi Zona B dan signage digital di layar<div class="spec">loop · 16:9 · H-3</div></div>
+    <div class="card" style="border-top-color:var(--td)"><span class="eyebrow">3D modeling</span>Video simulasi 3D ruang pamer dan display sebelum produksi<div class="spec">30–40 dtk · 16:9 · H-20</div></div>
+  </div>
+  <h4>Hasil kerja yang harus diserahkan</h4>
+  <table><thead><tr><th>Hasil kerja</th><th>Tenggat</th><th>Diserahkan ke</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td>Venue terkonfirmasi + denah dan simulasi 3D ruang</td><td class="q">H-20</td><td>Forum PJ</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Daftar perangkat (punya/pinjam/sewa) + hitungan daya listrik</td><td class="q">H-14</td><td>Forum PJ</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Perangkat terkumpul dan diuji di satu tempat</td><td class="q">H-4</td><td>—</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Semua karya diuji di perangkat pameran, cadangan di flashdisk</td><td class="q">H-3</td><td><span class="pill k1">K1</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Instalasi selesai: layar, proyektor, gate, totem, poster stand, label</td><td class="q">H-1</td><td><span class="pill k4">K4</span> (gladi)</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>SOP nyala/mati perangkat dicetak di meja teknis</td><td class="q">H-1</td><td><span class="pill k4">K4</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Bongkar, pengembalian perangkat, ruang kembali bersih</td><td class="q">H+1</td><td>Pemilik venue</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<!-- K4 -->
+<section class="chapter">
+  <div class="ghead" style="background:var(--k4)"><div><span class="gn">Bab 2 · Kelompok 4</span><h2>Acara &amp; operasional</h2></div><div class="pj">PJ<b>Rahma</b></div></div>
+  <p>Menjalankan opening dan menjaga pameran berjalan setiap hari: rundown, pembicara, konsumsi, jadwal jaga, dan laporan.</p>
+  <h4>Anggota &amp; peran usulan</h4>
+  <table><thead><tr><th class="n">#</th><th>Nama</th><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>
+    <tr><td class="n">1</td><td><b>Rahma</b> (PJ)</td><td>Pimpinan acara</td><td>Rundown, gladi, stage manager saat opening, laporan harian</td></tr>
+    <tr><td class="n">2</td><td>Heri</td><td>MC &amp; panggung</td><td>Naskah MC, artist talk, mic dan sound acara, layar talk</td></tr>
+    <tr><td class="n">3</td><td>Shalwa H.</td><td>Konsumsi &amp; jadwal jaga</td><td>Konsumsi opening, jadwal penjaga, SOP harian, logistik panitia</td></tr>
+  </tbody></table>
+  <h4>Output karya video</h4>
+  <div class="out3">
+    <div class="card" style="border-top-color:var(--vm)"><span class="eyebrow">Video marketing</span>Video countdown opening dan highlight hari pertama<div class="spec">60 dtk · 16:9 · H-2 / H+1</div></div>
+    <div class="card" style="border-top-color:var(--mg)"><span class="eyebrow">Motion graphic</span>Lower third MC/pembicara dan slide artist talk<div class="spec">5 dtk/item · 16:9 · H-3</div></div>
+    <div class="card" style="border-top-color:var(--td)"><span class="eyebrow">3D modeling</span>Video animasi 3D bumper opening dan visual layar artist talk<div class="spec">10–20 dtk · 16:9 · H-3</div></div>
+  </div>
+  <h4>Hasil kerja yang harus diserahkan</h4>
+  <table><thead><tr><th>Hasil kerja</th><th>Tenggat</th><th>Diserahkan ke</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td>Rundown opening dan daftar tamu undangan</td><td class="q">H-14</td><td>Forum PJ, <span class="pill k2">K2</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Konfirmasi pembicara artist talk (3 seniman) + moderator</td><td class="q">H-10</td><td><span class="pill k2">K2</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Jadwal jaga dan SOP penjaga pameran</td><td class="q">H-7</td><td>Semua kelompok</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Pesan konsumsi (jumlah tamu + 10%)</td><td class="q">H-5</td><td>Vendor</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Naskah MC + semua video acara di satu laptop operator</td><td class="q">H-2</td><td><span class="pill k3">K3</span></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Gladi bersih opening</td><td class="q">H-1</td><td>Semua kelompok</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td>Laporan akhir pameran (pengunjung, kendala, evaluasi)</td><td class="q">H+3</td><td>Dosen pengampu</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<!-- ================= BAB 3 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 3</span><h2>Daftar kebutuhan pameran</h2><p class="lede">Kebutuhan pameran lukis yang disesuaikan untuk pameran karya video. Jumlah mengikuti contoh denah: 4 layar Zona A, 1 proyektor Zona B, 3 layar Zona C, 1 layar artist talk.</p></div>
+
+  <h3>A · Konsep &amp; kuratorial <span class="pill k1">K1</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">A1</td><td>Tema &amp; konsep</td><td>"Produk dalam Gerak"; brief 1 halaman berisi tema, jenis karya, aturan pengumpulan</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">A2</td><td>Teks kuratorial</td><td>300–500 kata, dipakai di katalog, dinding pintu masuk, rilis pers</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">A3</td><td>Artist statement</td><td>150–250 kata per seniman: brief, target audiens, pendekatan visual, proses (storyboard → produksi → final)</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">A4</td><td>Materi proses</td><td>Storyboard, moodboard, wireframe 3D, breakdown layer; untuk katalog dan artist talk</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>B · Karya &amp; file video <span class="pill k1">K1</span> <span class="pill k3">K3</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">B1</td><td>File master video marketing</td><td>MP4 H.264, sesuai standar Bab 4</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">B2</td><td>File master motion graphic</td><td>MP4 H.264, audio stereo dinormalisasi</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">B3</td><td>File master animasi 3D</td><td>MP4 H.264 hasil render animasi; file model (.blend/.fbx) sebagai arsip</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">B4</td><td>Thumbnail &amp; still</td><td>JPG 1920 px dari frame terbaik, untuk katalog dan media sosial</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">B5</td><td>Cadangan file</td><td>Folder bersama + flashdisk per player + 1 hard disk cadangan di meja teknis</td><td class="c">3 lapis</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">B6</td><td>Mock-up produk 3D</td><td>Cetak 3D atau mock-up fisik untuk pedestal Zona C (opsional)</td><td class="c">4</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>C · Perangkat display <span class="pill k3">K3</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">C1</td><td>TV/monitor Zona A &amp; C</td><td>43–55", Full HD/4K, port USB yang bisa auto-loop, layar matte bila ada</td><td class="c">7</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C2</td><td>TV artist talk</td><td>55–65" di standing bracket beroda</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C3</td><td>Proyektor Zona B</td><td>Min. 4.000 lumen, Full HD; short-throw bila jarak lempar kurang dari 6 m</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C4</td><td>Layar proyeksi</td><td>4 × 2,25 m, atau dinding putih doff yang dicat ulang</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C5</td><td>Media player</td><td>Flashdisk 32 GB per TV; media player/mini PC untuk proyektor dan TV yang tidak bisa loop</td><td class="c">9</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C6</td><td>Headphone</td><td>Over-ear berkabel + gantungan, satu per layar Zona A</td><td class="c">4</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C7</td><td>Speaker aktif</td><td>Stereo untuk Zona B; volume dikunci/ditandai</td><td class="c">2</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C8</td><td>Sound system acara</td><td>Speaker + mixer kecil + 2 mic wireless untuk opening dan artist talk</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C9</td><td>Laptop operator</td><td>Memutar countdown, lower third, slide talk; kabel HDMI 10 m</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">C10</td><td>Tablet</td><td>Buku tamu digital dan katalog di registrasi</td><td class="c">1–2</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<section>
+  <h3>D · Alat &amp; bahan instalasi <span class="pill k3">K3</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">D1</td><td>Bracket TV dinding</td><td>VESA sesuai ukuran TV + dynabolt; tengah layar 150 cm dari lantai</td><td class="c">7</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D2</td><td>Bor &amp; mata bor</td><td>Bor tembok + mata bor beton 6/8 mm</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D3</td><td>Paku beton, paku tembok, wall hook</td><td>Untuk label, signage, dan headphone hook</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D4</td><td>Palu, obeng set, tang, cutter, gunting</td><td>Disimpan di kotak alat meja teknis</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D5</td><td>Meteran &amp; waterpass</td><td>Memastikan layar dan label lurus dan sejajar</td><td class="c">1+1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D6</td><td>Tangga lipat A</td><td>Tinggi min. 2 m, untuk proyektor, lampu, dan gate; selalu dipegang satu orang</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D7</td><td>Kabel HDMI</td><td>1,5 m untuk tiap player; 10 m untuk proyektor dan laptop operator</td><td class="c">12</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D8</td><td>Stop kontak &amp; kabel roll</td><td>Stop kontak 4 lubang ber-saklar per zona, kabel roll 10–20 m</td><td class="c">6+3</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D9</td><td>UPS</td><td>Untuk proyektor dan laptop operator agar tidak mati saat listrik turun</td><td class="c">1–2</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D10</td><td>Manajemen kabel</td><td>Cable duct dinding, cable ties, lakban kabel lantai (hitam/kuning)</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">D11</td><td>Perekat</td><td>Double tape gel/mounting tape, selotip kertas (masking tape), benang kenur untuk garis lurus</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>E · Ruang &amp; tata cahaya <span class="pill k3">K3</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">E1</td><td>Venue</td><td>±18 × 12 m, bisa digelapkan, dinding bersih, sirkulasi nyaman, dekat toilet</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E2</td><td>Daya listrik</td><td>Hitung total watt semua perangkat + 30% cadangan; pisahkan jalur acara dan pameran</td><td class="c">—</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E3</td><td>Wi-Fi</td><td>Untuk katalog digital dan buku tamu tablet</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E4</td><td>Partisi &amp; tirai blackout</td><td>Partisi hitam pemisah Zona B, tirai blackout di bukaannya</td><td class="c">2+2</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E5</td><td>Lampu sorot</td><td>Spotlight hangat diarahkan ke label dan pedestal, bukan ke layar</td><td class="c">8–12</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E6</td><td>Pedestal</td><td>40 × 40 × 100 cm warna putih untuk mock-up Zona C</td><td class="c">4</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">E7</td><td>Bangku &amp; kursi</td><td>Bangku di Zona A dan B; 10–20 kursi untuk artist talk</td><td class="c">±25</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<section>
+  <h3>F · Media acara cetak &amp; konstruksi <span class="pill k2">K2</span> desain · <span class="pill k3">K3</span> pasang</h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">F1</td><td>Gate masuk (gapura)</td><td>4,6 × 3,6 m, lintasan 2,8 m; rangka hollow/kayu + print albatros atau PVC 3 mm; kaki diberi pemberat</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F2</td><td>Poster stand tripod</td><td>Foam board 5 mm ukuran A1; tripod besi 1,2–1,9 m; isi poster pameran dan poster karya + QR video</td><td class="c">4</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F3</td><td>Totem kubus</td><td>Kubus 50–60 cm × 4 tingkat dari corrugated/duplex atau forex 3 mm; panah zona, logo, QR</td><td class="c">2</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F4</td><td>Label karya</td><td>A6, kertas doff atau foam board tipis; isi sesuai Bab 4</td><td class="c">/karya</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F5</td><td>Dinding teks kuratorial</td><td>Stiker vinyl atau print A1 di dekat pintu masuk</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F6</td><td>Signage</td><td>Nomor &amp; nama zona, penunjuk arah, aturan ruang (jangan sentuh layar, jangan cabut kabel, jangan ubah volume)</td><td class="c">±10</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F7</td><td>QR code</td><td>Ke katalog digital, dicetak di gate, totem, registrasi, dan setiap label</td><td class="c">—</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">F8</td><td>Name tag panitia</td><td>Warna per kelompok</td><td class="c">17</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>G · Administrasi &amp; katalog <span class="pill k1">K1</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">G1</td><td>Katalog digital</td><td>Web/PDF: teks kuratorial, video atau link tiap karya, still, biodata seniman, daftar harga</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">G2</td><td>Buku tamu</td><td>Form di tablet (nama, instansi, kontak, karya favorit, kesan) + buku kertas cadangan</td><td class="c">1+1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">G3</td><td>Daftar harga</td><td>Harga lisensi penggunaan, hak penuh, atau commission per karya</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">G4</td><td>Stiker red dot</td><td>Penanda karya yang lisensinya sudah dibeli/dipesan</td><td class="c">1 lembar</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">G5</td><td>Kuitansi &amp; form minat</td><td>Kuitansi bernomor; form minat beli untuk dicatat penjaga</td><td class="c">1 buku</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">G6</td><td>Paket serah terima</td><td>Pengganti packaging: file master, file project, surat lisensi, dikirim lewat link</td><td class="c">/transaksi</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>H · Publikasi &amp; dokumentasi <span class="pill k2">K2</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">H1</td><td>Poster utama</td><td>Digital 4:5 untuk feed, cetak A2/A3 untuk mading dan kafe sekitar</td><td class="c">1+10</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">H2</td><td>Teaser video</td><td>15 dtk, versi 9:16 dan 16:9</td><td class="c">2</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">H3</td><td>Konten media sosial</td><td>Seri "kenalan sama seniman", potongan karya 5 dtk, hitung mundur</td><td class="c">14 hari</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">H4</td><td>Undangan opening</td><td>Digital untuk WhatsApp (H-7, pengingat H-1); cetak untuk dosen dan tamu khusus</td><td class="c">1+20</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">H5</td><td>Rilis pers</td><td>1 halaman + 3 foto, dikirim ke media kampus dan lokal</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">H6</td><td>Alat dokumentasi</td><td>Kamera foto, kamera video, tripod, gimbal, mic clip-on, memori cadangan, power bank</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <h3>I · Acara &amp; operasional <span class="pill k4">K4</span></h3>
+  <table><thead><tr><th class="n">#</th><th>Kebutuhan</th><th>Spesifikasi / keterangan</th><th class="c">Jml</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td class="n">I1</td><td>Rundown &amp; naskah MC</td><td>Lihat Bab 6; dicetak untuk MC, operator, dan PJ</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">I2</td><td>Konsumsi opening</td><td>Snack + minuman untuk jumlah tamu + 10%; meja di area bebas perangkat</td><td class="c">—</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">I3</td><td>Jadwal jaga &amp; SOP</td><td>Lihat Bab 6; ditempel di meja teknis dan registrasi</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">I4</td><td>Form laporan harian</td><td>Lihat Lampiran; diisi penjaga shift sore</td><td class="c">8</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">I5</td><td>Keamanan</td><td>Kotak P3K, cek APAR venue, nomor darurat ditempel</td><td class="c">1</td><td class="c"><span class="box"></span></td></tr>
+    <tr><td class="n">I6</td><td>Kebersihan</td><td>Kain microfiber untuk layar, kantong sampah, tisu</td><td class="c">1 set</td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+</section>
+
+<!-- ================= BAB 4 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 4</span><h2>Standar file video &amp; label karya</h2><p class="lede">Semua karya, termasuk animasi 3D, dikumpulkan dalam format yang sama agar bisa diputar di perangkat mana pun tanpa diubah lagi.</p></div>
+
+  <h3>Setting ekspor</h3>
+  <table><thead><tr><th>Item</th><th>Video marketing</th><th>Motion graphic</th><th>Animasi 3D</th></tr></thead><tbody>
+    <tr><td>Kontainer &amp; codec</td><td colspan="3">MP4 · H.264 (High profile) · audio AAC 48 kHz stereo 320 kbps</td></tr>
+    <tr><td>Resolusi</td><td>1920×1080 (16:9) atau 1080×1920 (9:16)</td><td>1920×1080</td><td>1920×1080; master 3840×2160 bila ada</td></tr>
+    <tr><td>Frame rate</td><td>24/25/30 fps (sesuai rekaman)</td><td>25/30 fps</td><td>24/30 fps</td></tr>
+    <tr><td>Bitrate</td><td colspan="3">16–20 Mbps untuk 1080p · 40–50 Mbps untuk 4K</td></tr>
+    <tr><td>Audio</td><td>Normalisasi -14 LUFS</td><td>Normalisasi -14 LUFS</td><td>Musik/SFX -14 LUFS, atau tanpa suara</td></tr>
+    <tr><td>Loop</td><td colspan="3">Tambahkan 1 dtk hitam di awal dan akhir agar pergantian loop tidak kasar</td></tr>
+    <tr><td>Software umum</td><td>Premiere Pro, DaVinci Resolve, CapCut</td><td>After Effects, Illustrator</td><td>Blender, Cinema 4D, Substance</td></tr>
+  </tbody></table>
+
+  <div class="cols2">
+    <div>
+      <h3>Penamaan file</h3>
+      <p class="mono" style="font-size:8.6pt;background:var(--soft);padding:6pt 8pt;border-radius:4pt">K2_3D_BimaA_BotolEmbun_v03.mp4</p>
+      <table><tbody>
+        <tr><td class="mono">K2</td><td>Kelompok pembuat (K1–K4)</td></tr>
+        <tr><td class="mono">3D</td><td>Disiplin: VM, MG, atau 3D</td></tr>
+        <tr><td class="mono">BimaA</td><td>Nama seniman tanpa spasi</td></tr>
+        <tr><td class="mono">BotolEmbun</td><td>Judul tanpa spasi</td></tr>
+        <tr><td class="mono">v03</td><td>Versi; final ditulis <span class="mono">FINAL</span></td></tr>
+      </tbody></table>
+    </div>
+    <div>
+      <h3>Struktur folder bersama</h3>
+      <pre class="mono" style="font-size:8.2pt;background:var(--soft);padding:8pt 10pt;border-radius:4pt;margin:0;line-height:1.55">RENDER-2026/
+├─ 00_Admin/        (buku ini, notulen, anggaran)
+├─ 01_Kuratorial/   (teks, statement, biodata)
+├─ 02_Karya/
+│  ├─ VM/  ├─ MG/  └─ 3D/
+│        (FINAL + still + file project)
+├─ 03_Publikasi/    (poster, teaser, medsos)
+├─ 04_Cetak/        (gate, totem, label, signage)
+├─ 05_Teknis/       (denah, simulasi, daftar alat)
+├─ 06_Acara/        (rundown, naskah MC, video acara)
+└─ 07_Dokumentasi/  (foto, video, aftermovie)</pre>
+    </div>
+  </div>
+
+  <h3>Isi label karya (A6)</h3>
+  <table><thead><tr><th>Baris</th><th>Contoh video marketing</th><th>Contoh animasi 3D</th></tr></thead><tbody>
+    <tr><td>Nama seniman</td><td>Raka Pratama</td><td>Bima Aditya</td></tr>
+    <tr><td>Judul · tahun</td><td>Pagi di Lereng · 2026</td><td>Botol Embun · 2025</td></tr>
+    <tr><td>Medium</td><td>Video iklan, live action</td><td>Animasi 3D produk (CGI ad)</td></tr>
+    <tr><td>Software</td><td>Premiere Pro, DaVinci Resolve</td><td>Blender, Substance Painter</td></tr>
+    <tr><td>Durasi (pengganti ukuran)</td><td class="q">00:00:30:00</td><td class="q">00:00:20:00 · loop</td></tr>
+    <tr><td>Format</td><td>1920×1080 · 16:9 · stereo</td><td>3840×2160 · 16:9 · 30 fps</td></tr>
+    <tr><td>Klien/brand</td><td>Kopi Lereng (fiktif)</td><td>Embun Air Mineral (fiktif)</td></tr>
+    <tr><td>Harga</td><td>Rp 7.500.000 · lisensi 1 tahun</td><td>Rp 6.000.000 · video master + file .blend</td></tr>
+    <tr><td>QR</td><td colspan="2">Ke halaman karya di katalog digital</td></tr>
+  </tbody></table>
+</section>
+
+<!-- ================= BAB 5 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 5</span><h2>Timeline persiapan</h2><p class="lede">Hitungan mundur dari hari opening (H). Baris berwarna menandai kelompok yang memimpin pekerjaan itu.</p></div>
+  <table><thead><tr><th style="width:18mm">Waktu</th><th><span class="pill k1">K1</span> Kuratorial</th><th><span class="pill k2">K2</span> Publikasi</th><th><span class="pill k3">K3</span> Teknis</th><th><span class="pill k4">K4</span> Acara</th></tr></thead><tbody>
+    <tr><td class="q">H-30</td><td colspan="4"><b>Rapat perdana semua panitia:</b> tema, pembagian kelompok, folder bersama, jadwal forum PJ</td></tr>
+    <tr><td class="q">H-28</td><td>Brief &amp; aturan karya disebar</td><td>Riset visual, moodboard</td><td>Survei venue</td><td>Konsep acara opening</td></tr>
+    <tr><td class="q">H-21</td><td>Pantau progres karya</td><td>Identitas visual final</td><td>Venue dikonfirmasi</td><td>Daftar tamu &amp; pembicara</td></tr>
+    <tr><td class="q">H-20</td><td>—</td><td>—</td><td>Denah + video simulasi 3D</td><td>—</td></tr>
+    <tr><td class="q">H-14</td><td><b>Batas file master karya</b></td><td>Poster digital, jadwal konten, animasi 3D key visual</td><td>Daftar perangkat + daya</td><td>Rundown final</td></tr>
+    <tr><td class="q">H-12</td><td>Daftar final karya</td><td>Konten medsos mulai</td><td>Pinjam/sewa perangkat</td><td>Konfirmasi pembicara</td></tr>
+    <tr><td class="q">H-10</td><td>Cek standar file, teks final</td><td>Desain cetak ke percetakan</td><td>Siapkan playlist per zona</td><td>Konfirmasi vendor konsumsi</td></tr>
+    <tr><td class="q">H-7</td><td>Video profil pameran</td><td>Teaser + undangan dikirim</td><td>—</td><td>Jadwal jaga &amp; SOP</td></tr>
+    <tr><td class="q">H-5</td><td>Katalog online, intro katalog</td><td>Rilis pers</td><td>—</td><td>Pesan konsumsi</td></tr>
+    <tr><td class="q">H-4</td><td>—</td><td>—</td><td>Uji semua perangkat</td><td>—</td></tr>
+    <tr><td class="q">H-3</td><td>—</td><td>—</td><td>Uji semua karya di perangkat asli</td><td>Lower third, bumper 3D</td></tr>
+    <tr><td class="q">H-2</td><td>—</td><td>Cetakan diterima &amp; dicek</td><td>—</td><td>Naskah MC, video acara di laptop operator</td></tr>
+    <tr><td class="q">H-1</td><td colspan="4"><b>Instalasi semua zona, pasang gate &amp; totem &amp; poster stand, gladi bersih pukul 16.00</b></td></tr>
+    <tr><td class="q">H</td><td colspan="4"><b>Opening 19.00</b> · lihat Bab 6</td></tr>
+    <tr><td class="q">H+1</td><td>Rekap buku tamu harian</td><td>Highlight hari pertama</td><td>Bongkar (setelah penutupan)</td><td>Laporan harian</td></tr>
+    <tr><td class="q">H+3</td><td>Rekap transaksi</td><td>Dokumentasi terpilah</td><td>Perangkat dikembalikan</td><td>Laporan akhir + evaluasi</td></tr>
+    <tr><td class="q">H+5</td><td colspan="4">Aftermovie dipublikasikan; rapat evaluasi semua panitia</td></tr>
+  </tbody></table>
+  <div class="note"><b>Catatan</b>Baris H+1 untuk bongkar berlaku setelah hari terakhir pameran, bukan setelah opening.</div>
+</section>
+
+<!-- ================= BAB 6 ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Bab 6</span><h2>Hari H &amp; operasional harian</h2><p class="lede">Opening, pembagian jaga, SOP perangkat, dan apa yang dilakukan kalau ada masalah.</p></div>
+
+  <h3>Rundown opening · Sabtu, 12 Desember (contoh)</h3>
+  <table><thead><tr><th style="width:18mm">Waktu</th><th>Kegiatan</th><th>Penanggung jawab</th></tr></thead><tbody>
+    <tr><td class="q">17.00</td><td>Tech check terakhir: semua layar, audio per zona, cadangan file</td><td><span class="pill k3">K3</span></td></tr>
+    <tr><td class="q">18.00</td><td>Briefing panitia di registrasi</td><td><span class="pill k4">K4</span></td></tr>
+    <tr><td class="q">18.30</td><td>Registrasi tamu, buku tamu tablet, QR katalog, welcome drink</td><td><span class="pill k1">K1</span> <span class="pill k4">K4</span></td></tr>
+    <tr><td class="q">19.00</td><td>Video countdown + bumper 3D; MC membuka acara</td><td><span class="pill k4">K4</span></td></tr>
+    <tr><td class="q">19.05</td><td>Sambutan penyelenggara dan kurator; peresmian dengan menyalakan serentak semua layar</td><td><span class="pill k1">K1</span> <span class="pill k3">K3</span></td></tr>
+    <tr><td class="q">19.20</td><td>Screening showreel gabungan 3 menit di Zona B</td><td><span class="pill k3">K3</span></td></tr>
+    <tr><td class="q">19.30</td><td>Artist talk "Dari brief ke render": 3 seniman × 10 menit + tanya jawab</td><td><span class="pill k4">K4</span></td></tr>
+    <tr><td class="q">20.10</td><td>Live render / demo animasi 3D 15 menit; tamu berkeliling dengan pendamping per zona</td><td>Semua</td></tr>
+    <tr><td class="q">21.00</td><td>Foto bersama, penutupan, perangkat dimatikan sesuai SOP</td><td><span class="pill k2">K2</span> <span class="pill k3">K3</span></td></tr>
+  </tbody></table>
+
+  <h3>Jadwal jaga</h3>
+  <table><thead><tr><th>Tanggal</th><th>Pagi · 10.00–15.30</th><th>Sore · 15.30–21.00</th><th>Catatan</th></tr></thead><tbody>
+    <tr><td class="q">Sab 12</td><td colspan="2">Semua kelompok</td><td>Opening</td></tr>
+    <tr><td class="q">Min 13</td><td><span class="pill k1">K1</span></td><td><span class="pill k2">K2</span></td><td></td></tr>
+    <tr><td class="q">Sen 14</td><td><span class="pill k3">K3</span></td><td><span class="pill k4">K4</span></td><td></td></tr>
+    <tr><td class="q">Sel 15</td><td><span class="pill k2">K2</span></td><td><span class="pill k1">K1</span></td><td></td></tr>
+    <tr><td class="q">Rab 16</td><td><span class="pill k4">K4</span></td><td><span class="pill k3">K3</span></td><td></td></tr>
+    <tr><td class="q">Kam 17</td><td><span class="pill k1">K1</span></td><td><span class="pill k3">K3</span></td><td></td></tr>
+    <tr><td class="q">Jum 18</td><td><span class="pill k2">K2</span></td><td><span class="pill k4">K4</span></td><td></td></tr>
+    <tr><td class="q">Sab 19</td><td colspan="2">Semua kelompok</td><td>Hari terakhir, bongkar setelah 21.00</td></tr>
+  </tbody></table>
+  <p>Setiap kelompok mendapat 3 shift. Minimal 2 orang per shift. Selalu ada satu anggota K3 yang bisa dihubungi untuk masalah teknis.</p>
+</section>
+
+<section style="break-before: page">
+  <h3 style="margin-top:0">SOP harian penjaga pameran</h3>
+  <div class="cols3">
+    <div class="card"><h4>09.30 · Sebelum buka</h4><ul class="tight">
+      <li>Nyalakan listrik utama, lalu layar dan player per zona, terakhir proyektor</li>
+      <li>Pastikan semua video berputar dari awal dan tidak ada notifikasi sistem di layar</li>
+      <li>Cek volume speaker Zona B sesuai tanda</li>
+      <li>Lap layar dengan microfiber, cek headphone, isi daya tablet</li>
+    </ul></div>
+    <div class="card"><h4>10.00–21.00 · Jam buka</h4><ul class="tight">
+      <li>Sambut pengunjung, arahkan buku tamu dan QR katalog</li>
+      <li>Keliling tiap jam: video macet, suara, headphone, label</li>
+      <li>Catat minat beli/lisensi di form minat</li>
+      <li>Hitung pengunjung (buku tamu + hitungan manual)</li>
+    </ul></div>
+    <div class="card"><h4>21.00 · Setelah tutup</h4><ul class="tight">
+      <li>Matikan proyektor dulu, tunggu kipas berhenti</li>
+      <li>Matikan player dan layar, lalu listrik utama</li>
+      <li>Simpan tablet, mic, dan barang berharga di loker terkunci</li>
+      <li>Isi laporan harian, kirim foto laporan ke grup panitia</li>
+    </ul></div>
+  </div>
+
+  <h3>Jika ada masalah</h3>
+  <table><thead><tr><th>Masalah</th><th>Langkah pertama</th><th>Jika belum beres</th></tr></thead><tbody>
+    <tr><td>Video berhenti/tidak loop</td><td>Cabut-pasang flashdisk, pilih ulang file, aktifkan repeat</td><td>Ganti dengan flashdisk cadangan; lapor K3</td></tr>
+    <tr><td>Layar hitam</td><td>Cek kabel daya dan HDMI, cek input source di remote</td><td>Matikan 1 menit lalu nyalakan; lapor K3</td></tr>
+    <tr><td>Tidak ada suara</td><td>Cek volume TV/speaker dan colokan headphone</td><td>Ganti headphone cadangan</td></tr>
+    <tr><td>Proyektor mati sendiri</td><td>Cek ventilasi tidak tertutup; tunggu dingin 10 menit</td><td>Pasang slide "sedang perbaikan"; lapor K3</td></tr>
+    <tr><td>Listrik turun</td><td>Matikan semua perangkat dulu sebelum listrik kembali</td><td>Nyalakan bertahap sesuai SOP pagi</td></tr>
+    <tr><td>Pengunjung menyentuh/menggeser perangkat</td><td>Tegur dengan sopan, tunjukkan papan aturan</td><td>Cek ulang posisi dan kabel</td></tr>
+    <tr><td>Ada yang ingin membeli karya</td><td>Isi form minat, berikan kontak PJ K1</td><td>K1 menindaklanjuti dalam 1×24 jam</td></tr>
+  </tbody></table>
+</section>
+
+<!-- ================= LAMPIRAN ================= -->
+<section class="chapter">
+  <div class="chap-head"><span class="num">Lampiran</span><h2>Formulir</h2></div>
+  <h3>Kontak panitia</h3>
+  <table><thead><tr><th>Kelompok</th><th>Nama</th><th>Peran</th><th style="width:45mm">No. WhatsApp</th></tr></thead><tbody>
+    <tr><td><span class="pill k1">K1</span></td><td>Tegar</td><td>PJ · kurator</td><td></td></tr>
+    <tr><td><span class="pill k2">K2</span></td><td>Rafly</td><td>PJ · art director</td><td></td></tr>
+    <tr><td><span class="pill k3">K3</span></td><td>Fuji</td><td>PJ · venue &amp; teknis</td><td></td></tr>
+    <tr><td><span class="pill k4">K4</span></td><td>Rahma</td><td>PJ · acara</td><td></td></tr>
+    <tr><td>—</td><td>Dosen pengampu</td><td>Pembimbing</td><td></td></tr>
+    <tr><td>—</td><td>Pengelola venue</td><td>Kontak gedung</td><td></td></tr>
+  </tbody></table>
+
+  <h3>Laporan harian penjaga</h3>
+  <table><tbody>
+    <tr><td style="width:45mm">Tanggal / shift</td><td></td></tr>
+    <tr><td>Kelompok &amp; nama penjaga</td><td></td></tr>
+    <tr><td>Jumlah pengunjung</td><td></td></tr>
+    <tr><td>Kendala teknis &amp; penanganan</td><td style="height:40pt"></td></tr>
+    <tr><td>Minat beli / transaksi</td><td style="height:30pt"></td></tr>
+    <tr><td>Kesan pengunjung yang menonjol</td><td style="height:30pt"></td></tr>
+    <tr><td>Catatan untuk shift berikutnya</td><td style="height:30pt"></td></tr>
+  </tbody></table>
+
+  <h3>Serah terima perangkat</h3>
+  <table><thead><tr><th>Perangkat</th><th class="c">Jml</th><th>Dari</th><th>Kondisi diterima</th><th>Kondisi dikembalikan</th><th class="c">✓</th></tr></thead><tbody>
+    <tr><td style="height:18pt"></td><td></td><td></td><td></td><td></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td style="height:18pt"></td><td></td><td></td><td></td><td></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td style="height:18pt"></td><td></td><td></td><td></td><td></td><td class="c"><span class="box"></span></td></tr>
+    <tr><td style="height:18pt"></td><td></td><td></td><td></td><td></td><td class="c"><span class="box"></span></td></tr>
+  </tbody></table>
+
+  <div class="sign">
+    <div>PJ Kelompok 3</div><div>Pengelola venue</div><div>Dosen pengampu</div>
+  </div>
+</section>
+
+</body>
+</html>
