@@ -53,12 +53,32 @@
   .modes { display: flex; gap: 6px; }
   .modes a { font: 600 13px "Plus Jakarta Sans", system-ui, sans-serif; color: var(--fg); text-decoration: none; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; padding: 7px 10px; }
   .modes a[aria-current="true"] { background: rgba(255,255,255,.18); }
+  .rd { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; background: #0b0d15; border-left: 1px solid #242a3d; padding: 18px 16px; display: none; flex-direction: column; gap: 12px; font-family: "Plus Jakarta Sans", Arial, sans-serif; }
+  .with-rd .rd { display: flex; }
+  .with-rd #c { width: calc(100% - 300px); }
+  .with-rd .hud { right: 300px; }
+  .with-rd .ctl { right: calc(300px + max(16px, env(safe-area-inset-right))); }
+  .rd-h small { display: block; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+  .rd-h b { display: block; font-family: "Unbounded", "Arial Black", sans-serif; font-size: 30px; line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .rd-h span { font-size: 12px; color: var(--muted); }
+  .rd ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .rd li { display: grid; grid-template-columns: 44px 1fr auto; gap: 2px 8px; padding: 7px 8px 8px; border-radius: 6px; position: relative; border-left: 3px solid transparent; }
+  .rd li .tm { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); padding-top: 1px; }
+  .rd li .ti { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+  .rd li .ds { grid-column: 2 / 4; font-size: 11px; color: var(--muted); line-height: 1.3; }
+  .rd li .pj { font-family: "JetBrains Mono", monospace; font-size: 9.5px; padding: 1px 5px; border-radius: 3px; color: #fff; align-self: start; }
+  .rd li .pg { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--c); width: 0; }
+  .rd li.past { opacity: .45; }
+  .rd li.past .tm::after { content: " ✓"; color: #7fe3a8; }
+  .rd li.now { background: rgba(255,255,255,.08); border-left-color: var(--c); }
+  .rd li.now .tm { color: #fff; }
   .loading { position: fixed; inset: 0; display: grid; place-content: center; font-family: "JetBrains Mono", monospace; color: var(--muted); }
 </style>
 </head>
 <body>
 <canvas id="c" aria-label="Simulasi 3D ruang pamer RENDER: gate masuk, registrasi, zona video marketing, ruang proyeksi motion graphic, zona 3D modeling" role="img"></canvas>
 <div class="loading" id="loading">Memuat ruang pamer…</div>
+<aside class="rd" id="rd" aria-label="Rundown acara pembukaan"><div class="rd-h"><small>RUNDOWN PEMBUKAAN</small><b id="rdClock">18.30</b><span>Sabtu, 12 Desember 2026</span></div><ol id="rdList"></ol></aside>
 <div class="hud">
   <div class="vign" id="vign"></div>
   <div class="brand"><span class="rec"></span><b>RENDER</b><span id="brandSub">simulasi ruang pamer</span></div>
@@ -94,6 +114,7 @@ const MODE = HASH.includes("pov") ? "pov" : HASH.includes("event") ? "event" : "
 document.querySelectorAll(".modes a").forEach(a => { a.setAttribute("aria-current", a.dataset.m === MODE ? "true" : "false"); a.addEventListener("click", e => { e.preventDefault(); location.hash = a.dataset.m; location.reload(); }); });
 const MODE_LABEL = { tour: ["simulasi ruang pamer", "Simulasi ruang pamer · 12 karya · 4 kelompok"], pov: ["POV pengunjung", "POV pengunjung · satu kunjungan"], event: ["simulasi acara pembukaan", "Pembukaan pameran · Sabtu, 12 Desember 2026"] };
 document.getElementById("brandSub").textContent = MODE_LABEL[MODE][0];
+if (MODE === "event") document.documentElement.classList.add("with-rd");
 document.getElementById("titleSub").textContent = MODE_LABEL[MODE][1];
 if (RENDER_MODE) document.documentElement.classList.add("render");
 try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2500))]); } catch (e) {}
@@ -114,7 +135,7 @@ scene.background = new THREE.Color("#131a2b");
 scene.fog = new THREE.Fog("#131a2b", 22, 48);
 const camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.05, 120);
 function resize() {
-  const w = innerWidth, h = innerHeight;
+  const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
   renderer.setSize(w, h, false);
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
@@ -786,6 +807,32 @@ const capEl = document.getElementById("cap"), capEb = document.getElementById("c
 const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
 let lastCap = -1;
 const subEl = document.getElementById("sub"), subT = document.getElementById("subT");
+const RD = [
+  [0, 6, 1110, "18.30", "Tamu datang", "Gate & area luar, penyambutan", "K2", "#d9472a"],
+  [6, 12, 1125, "18.45", "Registrasi & welcome drink", "Buku tamu tablet, QR katalog", "K1", "#6d4fd8"],
+  [12, 20, 1140, "19.00", "MC membuka acara", "Video countdown + bumper 3D", "K4", "#2f7d4f"],
+  [20, 27, 1145, "19.05", "Sambutan kurator", "Tegar, PJ Kelompok 1", "K1", "#6d4fd8"],
+  [27, 34, 1150, "19.10", "Peresmian", "Hitung mundur, 12 layar menyala", "K3", "#0f86b8"],
+  [34, 41, 1160, "19.20", "Screening showreel", "4 layar Zona B, speaker", "K3", "#0f86b8"],
+  [41, 49, 1170, "19.30", "Artist talk", "Perwakilan 4 kelompok", "K4", "#2f7d4f"],
+  [49, 54, 1210, "20.10", "Live render & tur karya", "Pendamping per zona", "Semua", "#5a6078"],
+  [54, 60.01, 1260, "21.00", "Foto bersama & penutupan", "17 panitia, perangkat dimatikan", "K2", "#d9472a"],
+];
+const rdList = document.getElementById("rdList"), rdClock = document.getElementById("rdClock");
+const rdItems = RD.map(r => { const li = document.createElement("li"); li.style.setProperty("--c", r[7]);
+  li.innerHTML = `<span class="tm">${r[3]}</span><span class="ti">${r[4]}</span><span class="pj" style="background:${r[7]}">${r[6]}</span><span class="ds">${r[5]}</span><i class="pg"></i>`;
+  rdList.appendChild(li); return li; });
+function updateRundown(t) {
+  RD.forEach((r, i) => {
+    const li = rdItems[i], now = t >= r[0] && t < r[1];
+    li.classList.toggle("now", now); li.classList.toggle("past", t >= r[1]);
+    li.querySelector(".pg").style.width = now ? ((t - r[0]) / (r[1] - r[0]) * 100) + "%" : "0";
+  });
+  const i = RD.findIndex(r => t >= r[0] && t < r[1]); const r = RD[Math.max(0, i)];
+  const nextMin = i < RD.length - 1 ? RD[i + 1][2] : 1290;
+  const m = Math.floor(r[2] + (nextMin - r[2]) * Math.max(0, Math.min(1, (t - r[0]) / (r[1] - r[0]))));
+  rdClock.textContent = `${String(Math.floor(m / 60)).padStart(2, "0")}.${String(m % 60).padStart(2, "0")}`;
+}
 const phoneEl = document.getElementById("phone"), hpEl = document.getElementById("hp"), hpBars = [...hpEl.querySelectorAll(".w i")];
 const flashEl = document.getElementById("flash"), fadeEl = document.getElementById("fade"), vignEl = document.getElementById("vign");
 animTex.forEach((a, i) => a.onAt = 31 + i * .07);
@@ -837,6 +884,7 @@ function renderAt(t) {
   titleEl.style.opacity = cl((2.4 - t) / .5);
   let ci = caps.findIndex(c => t >= c[0] && t < c[1]);
   capEl.style.opacity = ci < 0 ? 0 : cl(Math.min((t - caps[ci][0]) / .35, (caps[ci][1] - t) / .35, 1));
+  if (MODE === "event") updateRundown(t);
   if (ci >= 0 && ci === caps.length - 1) capEl.style.opacity = cl((t - caps[ci][0]) / .35);
   if (ci >= 0 && ci !== lastCap) { const c = caps[ci]; capEb.textContent = c[2]; capT.textContent = c[3]; capS.textContent = c[4]; capEl.style.setProperty("--c", c[5]); lastCap = ci; }
   // overlay per mode
