@@ -121,7 +121,8 @@ try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2
 
 const C = { ink: "#0e1018", fg: "#eef0fa", vm: "#ff7a59", mg: "#a58cff", td: "#3fbdf0", green: "#2f9d63", gold: "#f4b740", paper: "#f4f4f0" };
 const FD = '"Unbounded", "Arial Black", sans-serif', FB = '"Plus Jakarta Sans", Arial, sans-serif', FM = '"JetBrains Mono", monospace';
-const DUR = 60, FPS = 30;
+const DUR = MODE === "event" ? 180 : 60, FPS = 30;
+const EVT = {"tiga": 61.6, "dua": 62.6, "satu": 63.6, "P": 64.2, "flash": [157.13, 157.93]};
 
 /* ---------- renderer ---------- */
 const canvas = document.getElementById("c");
@@ -475,20 +476,44 @@ function talkDefault(g, w, h) {
   g.font = `400 13px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("wireframe → final", 300, 280);
 }
 const talkSlides = [
-  [0, 27, "Pembukaan", "RENDER", "PRODUK DALAM GERAK · 19.00"],
-  [41, 46, "Artist talk", "Kelompok 2", "KRISPI BOX · DARI BRIEF KE RENDER"],
-  [46, 61, "Artist talk", "Storyboard", "BRIEF → STORYBOARD → RENDER"],
+  [0, 42, "Pembukaan", "RENDER", "PRODUK DALAM GERAK · 19.00"],
+  [42, 49.4, "Sambutan", "Ketua panitia", "PENYELENGGARA PAMERAN"],
+  [49.4, 56.5, "Sambutan kurator", "Tegar", "PJ KELOMPOK 1 · KURATOR"],
+  [56.5, 60.9, "Peresmian", "RENDER", "PRODUK DALAM GERAK"],
+  [82, 94.4, "Artist talk · 1/4", "Kelompok 1", "KOPI LERENG · VM · MG · 3D"],
+  [94.4, 105.6, "Artist talk · 2/4", "Kelompok 2", "KRISPI BOX · BRIEF → STORYBOARD → RENDER"],
+  [105.6, 116.2, "Artist talk · 3/4", "Kelompok 3", "SEPATU ARUNIKA · GERAK LARI"],
+  [116.2, 122.8, "Artist talk · 4/4", "Kelompok 4", "EMBUN · EXPLODED VIEW"],
+  [122.8, 130.5, "Tanya jawab", "Q & A", "ARTIST TALK · 4 KELOMPOK"],
+  [130.5, 166, "Live render", "Zona C", "DEMO BLENDER · 20.10"],
 ];
 const talk = tvScreen((g, w, h, t) => {
   if (MODE !== "event") { talkDefault(g, w, h); return; }
-  if (t >= 27.4 && t < 31) {
+  if (t >= 170) { g.fillStyle = "#020203"; g.fillRect(0, 0, w, h); return; }
+  if (t < 10) { testBars(g, w, h, "TEST · TV TALK"); return; }
+  if (t >= 30 && t < 35.2) {
     g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
-    const n = t < 28.6 ? "" : t < 29.6 ? "3" : t < 30.6 ? "2" : "1";
+    const n = 5 - Math.floor(t - 30); const ph = (t - 30) % 1;
+    g.strokeStyle = "#a58cff"; g.lineWidth = 10; g.beginPath(); g.arc(w / 2, h / 2, 100, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - ph)); g.stroke();
+    g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.font = `800 130px ${FD}`; g.fillText(String(Math.max(1, n)), w / 2, h / 2 + 6);
+    g.textAlign = "left"; g.textBaseline = "alphabetic"; return;
+  }
+  if (t >= 35.2 && t < 42) {
+    g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+    const k = Math.min(1, (t - 35.2) / .6);
+    g.textAlign = "center"; g.textBaseline = "middle"; g.font = `800 ${Math.round(70 + 20 * k)}px ${FD}`;
+    g.fillStyle = "#ff7a59"; g.fillText("RENDER", w / 2 - 5, h / 2); g.fillStyle = "#3fbdf0"; g.fillText("RENDER", w / 2 + 5, h / 2); g.fillStyle = "#fff"; g.fillText("RENDER", w / 2, h / 2);
+    g.font = `400 18px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("PEMBUKAAN PAMERAN · 12.12.2026", w / 2, h / 2 + 70);
+    g.textAlign = "left"; g.textBaseline = "alphabetic"; return;
+  }
+  if (t >= 60.9 && t < EVT.P) {
+    g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+    const n = t < EVT.tiga ? "" : t < EVT.dua ? "3" : t < EVT.satu ? "2" : "1";
     g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff";
     if (n) { g.font = `800 190px ${FD}`; g.fillText(n, w / 2, h / 2 + 8); } else { g.font = `800 40px ${FD}`; g.fillText("Peresmian", w / 2, h / 2); }
     g.textAlign = "left"; g.textBaseline = "alphabetic"; return;
   }
-  if (t >= 31 && t < 41) { talkDefault(g, w, h); return; }
+  if (t >= EVT.P && t < 82) { talkDefault(g, w, h); return; }
   const sl = talkSlides.find(x => t >= x[0] && t < x[1]) || talkSlides[0];
   g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
   g.fillStyle = C.vm; g.fillRect(0, h - 10, w / 3, 10); g.fillStyle = C.mg; g.fillRect(w / 3, h - 10, w / 3, 10); g.fillStyle = C.td; g.fillRect(2 * w / 3, h - 10, w / 3, 10);
@@ -496,6 +521,13 @@ const talk = tvScreen((g, w, h, t) => {
   g.font = `800 54px ${FD}`; g.fillStyle = "#fff"; g.fillText(sl[3], 28, 140);
   g.font = `400 15px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sl[4], 30, 190);
 }, 512, 288);
+function testBars(g, w, h, label) {
+  const cols = ["#c0c0c0", "#c0c000", "#00c0c0", "#00c000", "#c000c0", "#c00000", "#0000c0"];
+  cols.forEach((c, i) => { g.fillStyle = c; g.fillRect(i * w / 7, 0, w / 7 + 1, h * .72); });
+  g.fillStyle = "#111"; g.fillRect(0, h * .72, w, h * .28);
+  g.fillStyle = "#fff"; g.font = `600 ${Math.round(h * .08)}px ${FM}`; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(label, w / 2, h * .86); g.textAlign = "left"; g.textBaseline = "alphabetic";
+}
 talk.noStandby = true; animTex.push(talk);
 box(1.5, .88, .06, std("#07080d"), -3, 1.55, -.6);
 plane(1.44, .82, basicTex(talk.t), -3, 1.55, -.565);
@@ -573,8 +605,9 @@ box(.7, .3, .4, std("#c9741f"), 8.1, .96, 4.6);
 const shirts = ["#5b6b8c", "#8c5b6b", "#6b8c5b", "#d0d4e0", "#2f3446", "#a07a4f", "#4f7aa0", "#7a4fa0"];
 const skin = std("#c48b62", { roughness: .8 });
 const panitiaM = std(C.green);
+const peopleAll = [];
 function person(x, z, ry, i, seated = false, panitia = false) {
-  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); peopleAll.push(g);
   const pants = std("#22263a"); const shirt = panitia ? panitiaM : std(shirts[i % shirts.length]);
   const by = seated ? -.38 : 0;
   if (!seated) { cyl(.07, .06, .82, pants, -.08, .41, 0, g, 8); cyl(.07, .06, .82, pants, .08, .41, 0, g, 8); }
@@ -598,7 +631,7 @@ person(-1.8, -.1, 0, pi++, false, true);
 // zona B
 [[-1, -3.2], [.4, -3.2], [1.2, -2.6], [-.6, -2.6]].forEach(([x, z]) => person(x, z, 0, pi++, true));
 // zona C
-person(5.0, -3.6, -Math.PI * .5, pi++); person(4.6, -2.6, -Math.PI * .4, pi++);
+person(5.0, -3.6, -Math.PI * .5, pi++); person(4.2, -1.8, -Math.PI * .4, pi++);
 const vrP = person(7, 1.2, Math.PI * .6, pi++); box(.22, .1, .14, std("#f4f4f0"), 0, 1.6, .1, vrP);
 person(5.0, 1.6, -Math.PI * .3, pi++, false, true);
 // konsumsi
@@ -629,7 +662,7 @@ if (MODE === "event") {
       const g = person(0, 0, 0, pi++);
       const sx = (i % 2 ? 1 : -1) * (1.6 + (i % 3) * .6), sz = 10.2 + (i % 4) * .8;
       const path = [[sx, sz], [(i % 2 ? .6 : -.6), 7.6], [(i % 2 ? .4 : -.4), 5.8], [-.2 + (i % 2) * .4, 4.0], [x, z]];
-      arrivals.push({ g, path, start: .2 + (i % 8) * .7, face });
+      arrivals.push({ g, path, start: 18.2 + (i % 8) * .7, face });
     } else {
       const g = person(x, z, face, pi++);
       g.userData.sway = i * .7;
@@ -638,7 +671,7 @@ if (MODE === "event") {
   // pembicara artist talk (duduk di depan panggung)
   const stoolM = std("#3a4052");
   [[-4.3, GCOL[0]], [-3.7, GCOL[1]], [-2.3, GCOL[2]], [-1.7, GCOL[3]]].forEach(([x, col]) => {
-    const st = cyl(.17, .17, .45, stoolM, x, .22, .75); const p = colorPerson(person(x, .75, Math.PI, pi++, true), col); timed.push([p, 40.5, 50.5]); timed.push([st, 40.5, 50.5]);
+    const st = cyl(.17, .17, .45, stoolM, x, .22, .75); const p = colorPerson(person(x, .75, Math.PI, pi++, true), col); timed.push([p, 81.5, 130.5]); timed.push([st, 81.5, 130.5]);
   });
   // foto bersama panitia di depan gate
   const team = [[1, 5], [2, 5], [3, 4], [4, 3]];
@@ -647,12 +680,47 @@ if (MODE === "event") {
     const front = i < 9, idx = front ? i : i - 9;
     const x = front ? -2.4 + idx * .6 : -2.1 + idx * .6, z = front ? 9.1 : 8.55;
     const p = colorPerson(person(x, z, 0, pi++), col);
-    timed.push([p, 53.5, 61]);
+    timed.push([p, 147.5, 166]);
+    // lingkaran briefing panitia (18.00) di area tengah depan
+    const a = i / all.length * Math.PI * 2;
+    const bx = 1.3 + Math.cos(a) * 1.45, bz = 2.9 + Math.sin(a) * 1.15;
+    const q = colorPerson(person(bx, bz, Math.atan2(1.3 - bx, 2.9 - bz), pi++), col);
+    timed.push([q, 10, 18]);
   });
   // tamu di Zona C saat tur
-  [[6.9, -1.3], [7.3, -2.9], [6.8, -4.1], [6.2, -2.2], [6.4, -.2]].forEach(([x, z], i) => { const g = person(x, z, Math.PI / 2 + (i % 2 ? .3 : -.3), pi++); timed.push([g, 48.5, 61]); });
+  [[6.9, -1.3], [7.3, -2.9], [6.8, -4.1], [6.2, -2.2], [6.4, -.2]].forEach(([x, z], i) => { const g = person(x, z, Math.PI / 2 + (i % 2 ? .3 : -.3), pi++); timed.push([g, 129.5, 166]); });
   // fotografer
-  const ph = person(-1.7, 11.0, Math.PI * .9, pi++); box(.16, .1, .12, std("#15171d"), 0, 1.5, -.16, ph); timed.push([ph, 53.5, 61]);
+  const ph = person(-1.7, 11.0, Math.PI * .9, pi++); box(.16, .1, .12, std("#15171d"), 0, 1.5, -.16, ph); timed.push([ph, 147.5, 166]);
+  // operator teknis saat tech check
+  const op = colorPerson(person(-7.6, 4.5, Math.PI, pi++), GCOL[2]); timed.push([op, 0, 10]);
+  // meja live render di Zona C
+  const lr = new THREE.Group(); lr.position.set(4.6, 0, -4.3); scene.add(lr);
+  box(.9, .05, .55, std("#e8eaf2"), 0, .76, 0, lr);
+  for (const dx of [-.4, .4]) for (const dz of [-.22, .22]) box(.04, .74, .04, trackM, dx, .37, dz, lr);
+  box(.5, .02, .34, std("#2a2e3a"), 0, .8, .02, lr);
+  const lt = tvScreen((g, w, h, t) => {
+    g.fillStyle = "#23262f"; g.fillRect(0, 0, w, h);
+    g.fillStyle = "#2f333d"; g.fillRect(0, 0, w, 22); g.fillRect(0, 0, 70, h);
+    g.strokeStyle = "rgba(255,255,255,.06)"; for (let i = 0; i < 12; i++) { g.beginPath(); g.moveTo(70 + i * 40, 22); g.lineTo(70 + i * 40, h); g.stroke(); }
+    const a = t * .9, sx = .35 + .65 * Math.abs(Math.cos(a));
+    g.save(); g.translate(300, 0); g.scale(sx, 1); bottlePath(g, 0, 280, 220); g.strokeStyle = "#ffb547"; g.lineWidth = 2; g.stroke();
+    for (let i = 1; i < 9; i++) { g.beginPath(); g.moveTo(-100, 280 - i * 24); g.lineTo(100, 280 - i * 24); g.stroke(); }
+    g.restore();
+    const prog = Math.max(0, Math.min(1, (t - 139) / 10));
+    g.fillStyle = "rgba(63,189,240,.25)"; g.fillRect(380, 40, 120, 160 * prog);
+    g.fillStyle = "#fff"; g.font = `600 13px ${FM}`; g.fillText("LIVE RENDER · EMBUN", 80, 15);
+    g.fillStyle = "#a3aac2"; g.fillText(`FRAME ${String(Math.floor(prog * 30)).padStart(3, "0")}/030`, 380, 225);
+  });
+  lt.noStandby = true; animTex.push(lt);
+  const scr = plane(.5, .31, basicTex(lt.t), 0, .97, -.15, 0, lr); scr.rotation.x = -.2;
+  const demo = colorPerson(person(5.25, -4.55, Math.PI * .75, pi++), GCOL[2]); timed.push([demo, 129.5, 166]);
+  timed.push([lr, 129.5, 999]);
+}
+
+if (MODE === "event") {
+  const tset = new Set(timed.map(x => x[0])), aset = new Set(arrivals.map(x => x.g));
+  peopleAll.forEach(g => { if (!tset.has(g) && !aset.has(g)) timed.push([g, 18, 166]); });
+  arrivals.forEach(ar => timed.push([ar.g, 18, 166]));
 }
 
 /* ---------- jalur kamera ---------- */
@@ -732,15 +800,24 @@ function keyU(keysArr, t) {
 }
 // --- acara: beberapa shot dengan potongan
 const shots = [
-  [0, 6, [V(0, 2.3, 18.5), V(0, 1.9, 13.2)], [V(0, 1.8, 7.4), V(0, 1.7, 7.4)], 55],
-  [6, 12, [V(1.7, 1.75, 2.6), V(1.2, 1.75, 2.9)], [V(4.2, 1.0, 4.8), V(4.0, 1.0, 5.0)], 55],
-  [12, 20, [V(2.8, 2.7, 5.0), V(2.2, 2.6, 4.6)], [V(-2.8, 1.3, -.2), V(-2.6, 1.3, -.3)], 58],
-  [20, 27, [V(-.4, 1.62, 2.1), V(-.7, 1.62, 1.8)], [V(-1.8, 1.45, -.1), V(-1.8, 1.45, -.1)], 42],
-  [27, 34, [V(1.4, 2.3, 4.6), V(.4, 2.3, 4.4)], [V(-5, 1.55, -.6), V(-6.5, 1.6, -.2)], 60],
-  [34, 41, [V(0, 1.75, -1.1), V(0, 1.7, -2.0)], [V(0, 1.6, -6), V(0, 1.65, -6)], 55],
-  [41, 49, [V(-.2, 2.1, 3.3), V(-.6, 2.05, 3.0)], [V(-3, 1.2, -.1), V(-3, 1.2, -.1)], 48],
-  [49, 54, [V(3.4, 1.7, .6), V(4.5, 1.7, -.4)], [V(8.5, 1.4, -2.0), V(8.6, 1.4, -2.8)], 55],
-  [54, 60.1, [V(0, 1.75, 14.6), V(0, 1.7, 14.0)], [V(0, 1.55, 8.6), V(0, 1.55, 8.6)], 50],
+  [0, 10, [V(3.6, 2.4, 5.4), V(2.6, 2.3, 4.8)], [V(-3, 1.4, -2), V(-3.4, 1.4, -2.2)], 60],
+  [10, 18, [V(3.7, 2.25, 5.6), V(3.3, 2.15, 5.4)], [V(1.3, 1.1, 2.9), V(1.3, 1.1, 2.9)], 50],
+  [18, 24, [V(0, 2.3, 18.5), V(0, 1.9, 13.5)], [V(0, 1.8, 7.4), V(0, 1.7, 7.4)], 55],
+  [24, 30, [V(1.7, 1.75, 2.6), V(1.2, 1.75, 2.9)], [V(4.2, 1.0, 4.8), V(4.0, 1.0, 5.0)], 55],
+  [30, 42, [V(2.8, 2.7, 5.0), V(2.2, 2.6, 4.6)], [V(-2.8, 1.35, -.3), V(-2.7, 1.35, -.4)], 56],
+  [42, 49.4, [V(-.4, 1.62, 2.1), V(-.7, 1.62, 1.8)], [V(-1.8, 1.45, -.1), V(-1.8, 1.45, -.1)], 42],
+  [49.4, 56.5, [V(.7, 1.7, 1.0), V(.5, 1.7, .8)], [V(-1.8, 1.45, -.1), V(-1.9, 1.45, -.1)], 40],
+  [56.5, 68, [V(1.4, 2.3, 4.6), V(.4, 2.3, 4.4)], [V(-5, 1.55, -.6), V(-6.5, 1.6, -.2)], 60],
+  [68, 82, [V(0, 1.75, -1.1), V(0, 1.7, -2.0)], [V(0, 1.6, -6), V(0, 1.65, -6)], 55],
+  [82, 94.4, [V(-.2, 2.1, 3.3), V(-.6, 2.05, 3.0)], [V(-3, 1.2, -.1), V(-3, 1.2, -.1)], 48],
+  [94.4, 105.6, [V(-3.0, 1.7, 3.0), V(-2.6, 1.7, 2.9)], [V(-3, 1.05, .6), V(-3, 1.05, .6)], 44],
+  [105.6, 116.2, [V(-.6, 1.7, -.7), V(-.8, 1.7, -.4)], [V(-3.2, 1.15, 1.4), V(-3.2, 1.15, 1.2)], 52],
+  [116.2, 122.8, [V(-3.0, 1.9, 2.7), V(-3.0, 1.85, 2.5)], [V(-3, 1.45, -.6), V(-3, 1.45, -.6)], 38],
+  [122.8, 130.5, [V(-1.0, 2.4, 4.2), V(-1.6, 2.4, 4.0)], [V(-3, 1.1, 0), V(-3, 1.1, 0)], 55],
+  [130.5, 138, [V(3.4, 1.7, .6), V(4.2, 1.7, -.2)], [V(8.5, 1.4, -2.0), V(8.6, 1.4, -2.6)], 55],
+  [138, 148, [V(4.1, 1.55, -3.0), V(4.35, 1.5, -3.25)], [V(4.6, .98, -4.45), V(4.6, .98, -4.45)], 42],
+  [148, 166, [V(0, 1.75, 14.6), V(0, 1.7, 14.0)], [V(0, 1.55, 8.6), V(0, 1.55, 8.6)], 50],
+  [166, 180.1, [V(.2, 2.6, 5.4), V(0, 2.4, 4.6)], [V(0, 1.3, -3), V(0, 1.3, -3.2)], 60],
 ];
 const _p = new THREE.Vector3(), _l = new THREE.Vector3();
 function camAt(t) {
@@ -774,15 +851,17 @@ const CAPS_POV = [
   [55.6, 58, "Pintu keluar", "Selesai berkunjung", "Sekitar 25 menit untuk 12 karya", C.fg],
 ];
 const CAPS_EVENT = [
-  [2.6, 6, "18.30 · Tamu datang", "Gate dan area luar", "Tamu undangan, dosen, dan pengunjung umum", C.vm],
-  [6, 12, "18.45 · Registrasi", "Buku tamu & welcome drink", "Kelompok 1 dan 4 di meja registrasi", C.green],
-  [12, 20, "19.00 · Pembukaan", "MC membuka acara", "Layar karya masih standby", C.gold],
-  [20, 27, "19.05 · Sambutan", "Sambutan kurator", "Tegar, PJ Kelompok 1", C.mg],
-  [27, 34, "19.10 · Peresmian", "Hitung mundur, semua layar menyala", "Operator: Kelompok 3", C.vm],
-  [34, 41, "19.20 · Screening", "Showreel di Zona B", "4 layar proyeksi memutar bersamaan", C.mg],
-  [41, 49, "19.30 · Artist talk", "Perwakilan 4 kelompok", "Kelompok 2 membedah Krispi Box", C.gold],
-  [49, 54, "20.10 · Tur karya", "Live render & tur Zona C", "Tamu berkeliling dengan pendamping", C.td],
-  [54, 60.1, "21.00 · Penutupan", "Foto bersama panitia", "17 orang · 4 kelompok", C.fg],
+  [2.6, 10, "17.00 · Tech check", "Uji semua layar dan audio", "Operator Kelompok 3 · pola uji di 12 layar", C.td],
+  [10, 18, "18.00 · Briefing panitia", "17 panitia di posisi", "PJ Kelompok 4 memimpin briefing", C.green],
+  [18, 30, "18.30 · Tamu datang", "Gate, registrasi, welcome drink", "Kelompok 1 dan 4 di meja registrasi", C.vm],
+  [30, 42, "19.00 · Pembukaan", "MC membuka acara", "Video countdown dan bumper 3D di layar", C.gold],
+  [42, 56.5, "19.05 · Sambutan", "Ketua panitia dan kurator", "Kurator: Tegar, PJ Kelompok 1", C.mg],
+  [56.5, 68, "19.10 · Peresmian", "Hitung mundur, 12 layar menyala", "Operator: Kelompok 3", C.vm],
+  [68, 82, "19.20 · Screening", "Showreel 3 menit di Zona B", "4 layar proyeksi + speaker", C.mg],
+  [82, 130.5, "19.30 · Artist talk", "4 kelompok × 8 menit + tanya jawab", "Moderator: Kelompok 4", C.gold],
+  [130.5, 148, "20.10 · Live render", "Demo render di Zona C & tur karya", "Kelompok 3 · tamu berkeliling", C.td],
+  [148, 166, "21.00 · Foto bersama", "17 panitia di depan gate", "Dokumentasi: Kelompok 2", C.fg],
+  [166, 177, "21.15 · Penutupan", "Tamu pulang, perangkat dimatikan", "Sesuai SOP: proyektor, layar, listrik utama", C.fg],
 ];
 const VM = [["Pagi di Lereng", "iklan live action · 30 dtk · 16:9"], ["Krispi Box", "iklan media sosial · 30 dtk · 9:16"], ["Arunika Run", "iklan live action · 30 dtk · 16:9"], ["Segar dari Pegunungan", "iklan · 30 dtk · 16:9"]];
 const MG = [["Seduh Pelan", "kinetic typography · 20 dtk"], ["Renyah Gurih", "animasi 2D · 20 dtk"], ["Lari Lebih Ringan", "kinetic typography · 20 dtk"], ["Segar Jernih Alami", "animasi 2D · 20 dtk"]];
@@ -801,22 +880,24 @@ caps.push([51.3, 55.2, "Sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2
 caps.push([55.2, 60.1, "Tampak atas", "12 karya · 4 kelompok", "Kopi Lereng · Krispi Box · Sepatu Arunika · Embun", C.fg]);
 caps.sort((a, b) => a[0] - b[0]);
 if (MODE === "pov") caps = CAPS_POV; else if (MODE === "event") caps = CAPS_EVENT;
-const SUBS_ALL = { tour: [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]], pov: [[0.8, 3.43, "Malam ini saya mampir ke pameran Render."], [4.6, 6.44, "Gate-nya kelihatan dari jauh."], [8.0, 11.73, "Ada poster karya dengan kode QR. Saya scan dulu."], [12.8, 15.31, "Isi buku tamu di tablet, lalu masuk."], [16.6, 19.87, "Zona A. Saya pakai headphone di layar pertama."], [21.2, 24.8, "Audio iklan: Kopi Lereng. Seduh pelan, nikmati pagi."], [27.0, 30.55, "Area artist talk masih sepi, kursinya sudah siap."], [31.6, 35.32, "Ruang proyeksinya gelap, tulisannya terasa besar sekali."], [36.4, 40.62, "Tiap layar punya headphone sendiri, jadi suaranya tidak bertabrakan."], [41.8, 46.16, "Di Zona C, mock-up produknya ada tepat di depan layar animasinya."], [47.0, 50.85, "Jadi bisa membandingkan bentuk asli dan versi tiga dimensinya."], [52.2, 54.72, "Sebelum pulang, ambil minum dulu."], [55.4, 59.67, "Dua belas karya, sekitar dua puluh lima menit. Seru juga."]], event: [[6.6, 10.18, "Panitia: Silakan isi buku tamu dulu. Minumannya di sebelah kanan."], [12.8, 19.13, "MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak."], [20.3, 26.4, "Kurator: Dua belas karya ini lahir dari empat kelompok. Satu produk, tiga cara bercerita."], [26.5, 28.58, "MC: Mari kita resmikan bersama."], [28.6, 29.28, "MC: Tiga!"], [29.6, 30.24, "MC: Dua!"], [30.6, 31.35, "MC: Satu!"], [34.4, 37.37, "MC: Selanjutnya, screening showreel di Zona B."], [41.4, 45.0, "Moderator: Kita mulai artist talk. Silakan, Kelompok Dua."], [44.9, 49.58, "Kelompok 2: Kami mulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi."], [49.6, 53.18, "MC: Silakan berkeliling. Live render dimulai di Zona C."], [54.2, 56.61, "Fotografer: Panitia, merapat! Foto bersama!"], [56.51, 57.99, "Fotografer: Satu, dua, tiga!"]] };
+const SUBS_ALL = { tour: [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]], pov: [[0.8, 3.43, "Malam ini saya mampir ke pameran Render."], [4.6, 6.44, "Gate-nya kelihatan dari jauh."], [8.0, 11.73, "Ada poster karya dengan kode QR. Saya scan dulu."], [12.8, 15.31, "Isi buku tamu di tablet, lalu masuk."], [16.6, 19.87, "Zona A. Saya pakai headphone di layar pertama."], [21.2, 24.8, "Audio iklan: Kopi Lereng. Seduh pelan, nikmati pagi."], [27.0, 30.55, "Area artist talk masih sepi, kursinya sudah siap."], [31.6, 35.32, "Ruang proyeksinya gelap, tulisannya terasa besar sekali."], [36.4, 40.62, "Tiap layar punya headphone sendiri, jadi suaranya tidak bertabrakan."], [41.8, 46.16, "Di Zona C, mock-up produknya ada tepat di depan layar animasinya."], [47.0, 50.85, "Jadi bisa membandingkan bentuk asli dan versi tiga dimensinya."], [52.2, 54.72, "Sebelum pulang, ambil minum dulu."], [55.4, 59.67, "Dua belas karya, sekitar dua puluh lima menit. Seru juga."]], event: [[3.0, 7.96, "Operator K3: Zona A, aman. Zona B, aman. Zona C, aman. Proyektor siap."], [10.8, 16.4, "PJ Kelompok 4: Oke teman-teman, tiga puluh menit lagi tamu datang. Semua ke posisi masing-masing, ya."], [24.6, 29.32, "Panitia: Selamat malam. Silakan isi buku tamu dulu, minumannya di sebelah kanan."], [35.6, 41.93, "MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak."], [42.6, 49.28, "Ketua panitia: Terima kasih atas kehadirannya. Pameran ini hasil kerja tujuh belas mahasiswa dalam empat kelompok."], [49.6, 55.57, "Kurator: Dua belas karya ini lahir dari empat produk. Satu produk, tiga cara bercerita."], [57.0, 60.82, "MC: Mari kita resmikan bersama. Hitung mundur dari tiga."], [61.6, 62.28, "MC: Tiga!"], [62.6, 63.24, "MC: Dua!"], [63.6, 64.35, "MC: Satu!"], [69.0, 72.06, "MC: Silakan menuju Zona B untuk screening showreel."], [82.6, 86.31, "Moderator: Kita mulai artist talk. Kelompok Satu, silakan."], [86.21, 93.26, "Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi."], [94.6, 96.88, "Moderator: Terima kasih. Kelompok Dua."], [96.78, 102.07, "Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi."], [105.8, 106.98, "Moderator: Kelompok Tiga."], [107.2, 112.36, "Kelompok 3: Untuk Sepatu Arunika, kami fokus pada gerak lari, dari video sampai turntable."], [116.4, 117.61, "Moderator: Kelompok Empat."], [117.8, 121.97, "Kelompok 4: Embun memakai exploded view, supaya isi botolnya terlihat jelas."], [123.0, 126.01, "Penanya: Berapa lama proses render animasi tiga dimensinya?"], [126.4, 129.65, "Kelompok 2: Sekitar dua hari, untuk dua puluh detik animasi."], [130.8, 134.38, "MC: Silakan berkeliling. Live render dimulai di Zona C."], [137.0, 142.44, "Kelompok 3: Ini model botol Embun. Kita render langsung, satu frame sekitar tiga puluh detik."], [150.0, 152.41, "Fotografer: Panitia, merapat! Foto bersama!"], [155.8, 157.28, "Fotografer: Satu, dua, tiga!"], [167.0, 173.46, "MC: Terima kasih. Pameran dibuka untuk umum mulai besok, pukul sepuluh pagi. Selamat malam."]] };
 const SUBS = SUBS_ALL[MODE];
 const capEl = document.getElementById("cap"), capEb = document.getElementById("capEb"), capT = document.getElementById("capT"), capS = document.getElementById("capS");
 const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
 let lastCap = -1;
 const subEl = document.getElementById("sub"), subT = document.getElementById("subT");
 const RD = [
-  [0, 6, 1110, "18.30", "Tamu datang", "Gate & area luar, penyambutan", "K2", "#d9472a"],
-  [6, 12, 1125, "18.45", "Registrasi & welcome drink", "Buku tamu tablet, QR katalog", "K1", "#6d4fd8"],
-  [12, 20, 1140, "19.00", "MC membuka acara", "Video countdown + bumper 3D", "K4", "#2f7d4f"],
-  [20, 27, 1145, "19.05", "Sambutan kurator", "Tegar, PJ Kelompok 1", "K1", "#6d4fd8"],
-  [27, 34, 1150, "19.10", "Peresmian", "Hitung mundur, 12 layar menyala", "K3", "#0f86b8"],
-  [34, 41, 1160, "19.20", "Screening showreel", "4 layar Zona B, speaker", "K3", "#0f86b8"],
-  [41, 49, 1170, "19.30", "Artist talk", "Perwakilan 4 kelompok", "K4", "#2f7d4f"],
-  [49, 54, 1210, "20.10", "Live render & tur karya", "Pendamping per zona", "Semua", "#5a6078"],
-  [54, 60.01, 1260, "21.00", "Foto bersama & penutupan", "17 panitia, perangkat dimatikan", "K2", "#d9472a"],
+  [0, 10, 1020, "17.00", "Tech check", "Layar, audio per zona, cadangan file", "K3", "#0f86b8"],
+  [10, 18, 1080, "18.00", "Briefing panitia", "17 panitia ke posisi masing-masing", "K4", "#2f7d4f"],
+  [18, 30, 1110, "18.30", "Tamu datang & registrasi", "Buku tamu tablet, welcome drink", "K1", "#6d4fd8"],
+  [30, 42, 1140, "19.00", "Pembukaan oleh MC", "Video countdown + bumper 3D", "K4", "#2f7d4f"],
+  [42, 56.5, 1145, "19.05", "Sambutan", "Ketua panitia dan kurator", "K1", "#6d4fd8"],
+  [56.5, 68, 1150, "19.10", "Peresmian", "Hitung mundur, 12 layar menyala", "K3", "#0f86b8"],
+  [68, 82, 1160, "19.20", "Screening showreel", "3 menit di Zona B", "K3", "#0f86b8"],
+  [82, 130.5, 1170, "19.30", "Artist talk", "4 kelompok × 8 menit + tanya jawab", "K4", "#2f7d4f"],
+  [130.5, 148, 1210, "20.10", "Live render & tur karya", "Demo 15 menit di Zona C", "K3", "#0f86b8"],
+  [148, 166, 1260, "21.00", "Foto bersama", "17 panitia di depan gate", "K2", "#d9472a"],
+  [166, 180.01, 1275, "21.15", "Penutupan", "Tamu pulang, perangkat dimatikan", "K3", "#0f86b8"],
 ];
 const rdList = document.getElementById("rdList"), rdClock = document.getElementById("rdClock");
 const rdItems = RD.map(r => { const li = document.createElement("li"); li.style.setProperty("--c", r[7]);
@@ -835,9 +916,12 @@ function updateRundown(t) {
 }
 const phoneEl = document.getElementById("phone"), hpEl = document.getElementById("hp"), hpBars = [...hpEl.querySelectorAll(".w i")];
 const flashEl = document.getElementById("flash"), fadeEl = document.getElementById("fade"), vignEl = document.getElementById("vign");
-animTex.forEach((a, i) => a.onAt = 31 + i * .07);
+const fadeT = document.getElementById("fadeT"), fadeS = document.getElementById("fadeS");
+animTex.forEach((a, i) => { a.onAt = EVT.P + i * .07; a.offAt = 169 + i * .12; a.idx = i; });
 function drawStandby(a, t) {
   const g = a.g, w = a.c.width, h = a.c.height;
+  if (t < 10) { testBars(g, w, h, `TEST · LAYAR ${a.idx + 1}`); return; }
+  if (t >= a.offAt) { g.fillStyle = "#020203"; g.fillRect(0, 0, w, h); return; }
   g.fillStyle = "#07080d"; g.fillRect(0, 0, w, h);
   g.globalAlpha = .55 + .2 * Math.sin(t * 2);
   g.font = `800 ${Math.round(w * .09)}px ${FD}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#eef0fa";
@@ -850,11 +934,11 @@ const pad = n => String(n).padStart(2, "0");
 function renderAt(t) {
   t = Math.max(0, Math.min(DUR, t));
   for (const a of animTex) {
-    if (MODE === "event" && !a.noStandby && t < a.onAt) drawStandby(a, t); else a.draw(a.g, a.c.width, a.c.height, t);
+    if (MODE === "event" && !a.noStandby && (t < a.onAt || t >= a.offAt)) drawStandby(a, t); else a.draw(a.g, a.c.width, a.c.height, t);
     a.t.needsUpdate = true;
   }
   if (MODE === "event") {
-    const lf = t < 31 ? .5 : Math.min(1, .5 + (t - 31) * .5);
+    const lf = t < 18 ? 1 : t < EVT.P ? .5 : t < 170 ? Math.min(1, .5 + (t - EVT.P) * .5) : Math.max(.25, 1 - (t - 170) * .15);
     ptLights.forEach(l => l.intensity = l.userData.base * lf);
     timed.forEach(([o, a0, a1]) => o.visible = t >= a0 && t < a1);
     arrivals.forEach(ar => {
@@ -898,14 +982,15 @@ function renderAt(t) {
     fadeEl.style.opacity = cl((t - 57.6) / 1.2);
   }
   if (MODE === "event") {
-    let fl = 0; for (const ft of [57.9, 58.7]) fl = Math.max(fl, cl(1 - Math.abs(t - ft) / .12));
+    let fl = 0; for (const ft of EVT.flash) fl = Math.max(fl, cl(1 - Math.abs(t - ft) / .12));
     flashEl.style.opacity = fl * .9;
-    fadeEl.style.opacity = 0;
+    fadeT.textContent = "Terima kasih"; fadeS.textContent = "Pameran dibuka untuk umum 13–19 Desember · 10.00–21.00";
+    fadeEl.style.opacity = cl((t - 176.5) / 1.2);
   }
   const sb = SUBS.find(x => t >= x[0] && t < x[1]);
   subT.textContent = sb ? sb[2] : ""; subEl.style.opacity = sb ? 1 : 0;
   const f = Math.floor(t * FPS);
-  tcEl.textContent = `00:00:${pad(Math.floor(f / FPS))}:${pad(f % FPS)}`;
+  tcEl.textContent = `00:${pad(Math.floor(f / FPS / 60))}:${pad(Math.floor(f / FPS) % 60)}:${pad(f % FPS)}`;
   barEl.style.width = (u * 100) + "%";
   renderer.render(scene, camera);
 }
