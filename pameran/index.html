@@ -191,6 +191,28 @@ svg text { font-family: var(--f-body); }
 .shift ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: .92rem; display: grid; gap: 4px; }
 .shift .when { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
 
+/* KELOMPOK */
+.groups { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.group .gh { padding: 16px 18px; color: #fff; display: grid; gap: 2px; }
+.group .gh .gn { font-family: var(--f-mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+.group .gh h3 { font-size: 1rem; }
+.group .gb { padding: 14px 18px 18px; display: grid; gap: 14px; align-content: start; }
+.group ol { margin: 0; padding-left: 20px; display: grid; gap: 2px; }
+.group ol li::marker { font-family: var(--f-mono); color: var(--muted); font-size: .8rem; }
+.pj { font-family: var(--f-mono); font-size: .68rem; padding: 1px 6px; border-radius: 4px; background: var(--fg); color: var(--bg); margin-left: 6px; vertical-align: 1px; }
+.group ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: .88rem; display: grid; gap: 3px; }
+.group .sub { font-family: var(--f-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.gchip { display: inline-block; font-family: var(--f-mono); font-size: .72rem; padding: 2px 8px; border-radius: 4px; color: #fff; margin-top: 4px; }
+.rota { overflow-x: auto; margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.rota table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .88rem; }
+.rota th, .rota td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+.rota th { font-family: var(--f-mono); font-size: .74rem; font-weight: 600; color: var(--muted); }
+.rota tr:last-child td { border-bottom: 0; }
+.rota td .gchip { margin: 0; }
+@media (max-width: 900px) { .groups { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .groups { grid-template-columns: 1fr; } }
+
 footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 
 /* animasi layar di ilustrasi */
@@ -380,6 +402,49 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
       </div>
       <span class="tc" id="tc">00:00:00:00</span>
     </div>
+  </div>
+</section>
+
+<!-- ============ KELOMPOK ============ -->
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">Panitia · 4 kelompok · 17 orang</span>
+    <h2>Pembagian kelompok</h2>
+    <p class="lede">Setiap kelompok memegang satu bidang kebutuhan pameran, dan PJ menjadi penghubung ke kelompok lain. Pembagian bidang ini usulan awal, silakan ditukar sesuai minat dan keahlian anggota.</p>
+  </div>
+  <div class="groups">
+    <article class="group">
+      <div class="gh" style="background:#6d4fd8"><span class="gn">Kelompok 1</span><h3>Kuratorial &amp; administrasi</h3></div>
+      <div class="gb">
+        <ol><li>Tegar<span class="pj">PJ</span></li><li>Riani I.</li><li>Intan</li><li>Nisa</li><li>Wendi</li></ol>
+        <span class="sub">Tanggung jawab</span>
+        <ul><li>Tema, teks kuratorial, artist statement</li><li>Kurasi dan pengumpulan file karya</li><li>Label karya, katalog digital, QR</li><li>Buku tamu, daftar harga lisensi, kuitansi</li></ul>
+      </div>
+    </article>
+    <article class="group">
+      <div class="gh" style="background:#d9472a"><span class="gn">Kelompok 2</span><h3>Publikasi &amp; dokumentasi</h3></div>
+      <div class="gb">
+        <ol><li>Rafly<span class="pj">PJ</span></li><li>Riani P.</li><li>Putri</li><li>Shalwa A.</li><li>Nadia</li></ol>
+        <span class="sub">Tanggung jawab</span>
+        <ul><li>Teaser video, poster, undangan</li><li>Konten Instagram/WhatsApp, rilis pers</li><li>Signage dan aturan ruang</li><li>Foto, video, aftermovie</li></ul>
+      </div>
+    </article>
+    <article class="group">
+      <div class="gh" style="background:#0f86b8"><span class="gn">Kelompok 3</span><h3>Display &amp; teknis ruang</h3></div>
+      <div class="gb">
+        <ol><li>Fuji<span class="pj">PJ</span></li><li>Ronna</li><li>Marwa</li><li>Sinta</li></ol>
+        <span class="sub">Tanggung jawab</span>
+        <ul><li>Venue, denah, partisi, kelistrikan</li><li>Pemasangan TV, proyektor, pedestal</li><li>Tata cahaya dan audio per zona</li><li>Uji putar dan cadangan file</li></ul>
+      </div>
+    </article>
+    <article class="group">
+      <div class="gh" style="background:#2f7d4f"><span class="gn">Kelompok 4</span><h3>Acara &amp; operasional</h3></div>
+      <div class="gb">
+        <ol><li>Rahma<span class="pj">PJ</span></li><li>Heri</li><li>Shalwa H.</li></ol>
+        <span class="sub">Tanggung jawab</span>
+        <ul><li>Rundown opening, MC, artist talk</li><li>Konsumsi</li><li>Jadwal dan SOP penjaga pameran</li><li>Laporan harian</li></ul>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -811,6 +876,22 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
       </ul>
     </div>
   </div>
+  <div class="rota">
+    <table>
+      <thead><tr><th>Tanggal</th><th>Shift pagi · 10.00–15.30</th><th>Shift sore · 15.30–21.00</th><th>Catatan</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">Sab 12 Des</td><td colspan="2">Semua kelompok</td><td>Opening, tiap kelompok di bidangnya</td></tr>
+        <tr><td class="mono">Min 13 Des</td><td><span class="gchip" style="background:#6d4fd8">Kelompok 1</span></td><td><span class="gchip" style="background:#d9472a">Kelompok 2</span></td><td></td></tr>
+        <tr><td class="mono">Sen 14 Des</td><td><span class="gchip" style="background:#0f86b8">Kelompok 3</span></td><td><span class="gchip" style="background:#2f7d4f">Kelompok 4</span></td><td></td></tr>
+        <tr><td class="mono">Sel 15 Des</td><td><span class="gchip" style="background:#d9472a">Kelompok 2</span></td><td><span class="gchip" style="background:#6d4fd8">Kelompok 1</span></td><td></td></tr>
+        <tr><td class="mono">Rab 16 Des</td><td><span class="gchip" style="background:#2f7d4f">Kelompok 4</span></td><td><span class="gchip" style="background:#0f86b8">Kelompok 3</span></td><td></td></tr>
+        <tr><td class="mono">Kam 17 Des</td><td><span class="gchip" style="background:#6d4fd8">Kelompok 1</span></td><td><span class="gchip" style="background:#0f86b8">Kelompok 3</span></td><td></td></tr>
+        <tr><td class="mono">Jum 18 Des</td><td><span class="gchip" style="background:#d9472a">Kelompok 2</span></td><td><span class="gchip" style="background:#2f7d4f">Kelompok 4</span></td><td></td></tr>
+        <tr><td class="mono">Sab 19 Des</td><td colspan="2">Semua kelompok</td><td>Hari terakhir, bongkar pameran setelah 21.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Setiap kelompok mendapat 3 shift jaga. Shift tetap butuh minimal satu anggota Kelompok 3 yang bisa dihubungi bila ada masalah teknis.</p>
 </section>
 
 <footer>
@@ -822,13 +903,13 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
 <script>
 /* ---------- DATA ADAPTASI ---------- */
 const CATS = [
-  { key: "konsep", color: "--mg", title: "Konsep & kuratorial", icon: "concept", rows: [
+  { key: "konsep", group: 1, color: "--mg", title: "Konsep & kuratorial", icon: "concept", rows: [
     { from: "Tema & konsep", fromNote: "isu lingkungan, refleksi diri, eksplorasi medium",
       to: "Tema yang mengikat karya iklan dan produk", note: "Contoh: \"Produk dalam Gerak\" — bagaimana sebuah produk diceritakan lewat gerak, cahaya, dan bentuk. Alternatif: iklan untuk UMKM lokal, kampanye sosial, atau eksplorasi satu produk dalam tiga medium.", tags: ["brief kuratorial", "1 halaman"] },
     { from: "Kurator & artist statement", fromNote: "penjelasan proses kreatif",
       to: "Teks kuratorial + statement proses produksi", note: "Statement memuat brief klien (nyata atau fiktif), target audiens, pendekatan visual, dan tahapan kerja: riset → storyboard/moodboard → produksi → revisi → final.", tags: ["150–250 kata/seniman", "foto proses"] },
   ]},
-  { key: "karya", color: "--vm", title: "Karya & perlengkapan display", icon: "display", rows: [
+  { key: "karya", group: 3, color: "--vm", title: "Karya & perlengkapan display", icon: "display", rows: [
     { from: "Karya siap pajang", fromNote: "sistem gantung, paku, double tape",
       to: "File master siap putar di setiap layar", note: "Ekspor MP4 H.264, bitrate tinggi, audio AAC. Uji putar di perangkat asli, bukan di laptop. Simpan dua cadangan per karya (flashdisk + drive).", tags: ["MP4 H.264", "1080p / 4K", "auto-loop"] },
     { from: "Label karya", fromNote: "nama, judul, tahun, medium, ukuran, harga",
@@ -838,13 +919,13 @@ const CATS = [
     { from: "Penunjang display", fromNote: "pedestal, easel, partisi",
       to: "Layar, proyektor, pedestal tablet, partisi gelap", note: "TV/monitor untuk video marketing, proyektor + layar untuk motion graphic, pedestal dengan tablet atau turntable untuk 3D. Partisi hitam untuk membagi zona suara dan cahaya.", tags: ["TV 43–55\"", "proyektor 4.000 lm", "pedestal 40×40×100"] },
   ]},
-  { key: "venue", color: "--td", title: "Ruang pamer & tata cahaya", icon: "venue", rows: [
+  { key: "venue", group: 3, color: "--td", title: "Ruang pamer & tata cahaya", icon: "venue", rows: [
     { from: "Ruang pamer", fromNote: "galeri, ruang komunitas, kafe, studio",
       to: "Ruang yang bisa digelapkan dan punya daya listrik cukup", note: "Cek kapasitas listrik (hitung watt semua perangkat), jumlah stop kontak, dan Wi-Fi untuk katalog digital. Sirkulasi tetap lega di depan layar.", tags: ["cek daya", "Wi-Fi", "blackout"] },
     { from: "Tata cahaya", fromNote: "spotlight, hindari silau di kaca",
       to: "Cahaya rendah, tidak memantul di layar", note: "Kebalikan dari pameran lukis: ruang lebih redup agar layar kontras. Spotlight diarahkan ke label dan pedestal 3D saja, jangan ke permukaan layar.", tags: ["ambient redup", "spot ke label"] },
   ]},
-  { key: "admin", color: "--mg", title: "Administrasi & katalog", icon: "catalog", rows: [
+  { key: "admin", group: 1, color: "--mg", title: "Administrasi & katalog", icon: "catalog", rows: [
     { from: "Katalog pameran", fromNote: "cetak atau PDF/QR",
       to: "Katalog digital dengan video yang bisa diputar", note: "Halaman web atau PDF interaktif: teks kuratorial, thumbnail + link video, still render, biodata seniman, dan daftar harga/lisensi. Satu QR di pintu masuk dan di setiap label.", tags: ["web/PDF", "QR"] },
     { from: "Buku tamu", fromNote: "nama, kontak, kesan & pesan",
@@ -852,7 +933,7 @@ const CATS = [
     { from: "Daftar harga & transaksi", fromNote: "red dot, kuitansi, packaging",
       to: "Daftar harga lisensi/commission, red dot, kuitansi, serah terima file", note: "Karya digital dijual sebagai lisensi penggunaan, hak penuh, atau jasa commission. Pengemasan diganti paket serah terima: file master, file project, dan surat lisensi.", tags: ["lisensi", "commission", "surat serah terima"] },
   ]},
-  { key: "publikasi", color: "--vm", title: "Publikasi & dokumentasi", icon: "promo", rows: [
+  { key: "publikasi", group: 2, color: "--vm", title: "Publikasi & dokumentasi", icon: "promo", rows: [
     { from: "Materi promosi", fromNote: "poster, undangan, medsos, rilis pers",
       to: "Poster, teaser video, carousel seniman, rilis pers", note: "Gunakan medium pameran itu sendiri: teaser 15 detik, potongan karya 5 detik untuk Story, carousel wireframe → render untuk karya 3D.", tags: ["teaser 15 s", "9:16 & 1:1", "rilis pers"] },
     { from: "Signage", fromNote: "penunjuk arah, aturan, QR",
@@ -860,7 +941,7 @@ const CATS = [
     { from: "Tim dokumentasi", fromNote: "fotografer & videografer",
       to: "Foto, video, dan rekaman layar", note: "Selain suasana opening, rekam juga layar karya secara langsung (screen capture) dan reaksi pengunjung. Hasilnya jadi aftermovie dan arsip portofolio.", tags: ["aftermovie", "screen capture"] },
   ]},
-  { key: "opening", color: "--td", title: "Opening & operasional harian", icon: "opening", rows: [
+  { key: "opening", group: 4, color: "--td", title: "Opening & operasional harian", icon: "opening", rows: [
     { from: "Susunan acara", fromNote: "sambutan, peresmian, artist talk, musik",
       to: "Sambutan, peresmian, screening, artist talk dengan breakdown", note: "Lihat susunan acara di bawah. Pertunjukan pendukung bisa berupa live render, VJ set, atau musik akustik dengan visual dari karya.", tags: ["screening", "live render"] },
     { from: "Konsumsi", fromNote: "hidangan ringan & minuman",
@@ -869,6 +950,8 @@ const CATS = [
       to: "Penjaga pameran merangkap operator teknis", note: "Bisa menyalakan, mematikan, dan memperbaiki loop video yang macet. Lihat pembagian tugas di bagian akhir.", tags: ["SOP nyala/mati", "laporan harian"] },
   ]},
 ];
+
+const GROUPS = { 1: {n:"Kelompok 1 · PJ Tegar", c:"#6d4fd8"}, 2: {n:"Kelompok 2 · PJ Rafly", c:"#d9472a"}, 3: {n:"Kelompok 3 · PJ Fuji", c:"#0f86b8"}, 4: {n:"Kelompok 4 · PJ Rahma", c:"#2f7d4f"} };
 
 const ICONS = {
   concept: '<circle cx="28" cy="24" r="12" fill="none" stroke="C" stroke-width="3"/><rect x="22" y="38" width="12" height="6" rx="2" fill="C"/><path d="M28 16 v8 l5 4" stroke="C" stroke-width="3" fill="none" stroke-linecap="round"/>',
@@ -905,7 +988,7 @@ CATS.forEach((c, ci) => {
   }).join("");
   d.innerHTML = `<summary>
       <svg class="ico" viewBox="0 0 56 56" aria-hidden="true">${ICONS[c.icon].replaceAll('"C"', `"${col}"`)}</svg>
-      <h3 style="font-size:1.1rem">${c.title}</h3>
+      <div><h3 style="font-size:1.1rem">${c.title}</h3><span class="gchip" style="background:${GROUPS[c.group].c}">${GROUPS[c.group].n}</span></div>
       <span class="count" data-cat="${c.key}"></span>
     </summary><div class="rows">${rows}</div>`;
   catsEl.appendChild(d);
