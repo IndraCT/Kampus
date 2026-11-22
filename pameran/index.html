@@ -199,6 +199,11 @@ svg text { font-family: var(--f-body); }
 /* SIMULASI */
 .sim { display: grid; gap: 14px; }
 .sim video, .sim iframe { width: 100%; aspect-ratio: 16/9; max-width: 100%; display: block; border-radius: 12px; background: var(--screen); border: 0; }
+.sim-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-tabs .tab { font: 600 .9rem var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.sim-tabs .tab[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.sim-tabs .tab:focus-visible { outline: 2px solid var(--mg); outline-offset: 2px; }
+.sim-desc { color: var(--muted); max-width: 72ch; }
 .sim-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .sim-row p { color: var(--muted); font-size: .9rem; flex: 1; min-width: 220px; }
 
@@ -615,17 +620,23 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
 <!-- ============ SIMULASI ============ -->
 <section>
   <div class="sec-head">
-    <span class="eyebrow">Simulasi ruang · video 1 menit · narasi, subtitle &amp; musik · 1280×720</span>
-    <h2>Simulasi ruang pamer</h2>
-    <p class="lede">Tur kamera dari luar gedung: gate masuk, poster stand, totem kubus, dan registrasi. Setelah itu kamera menyorot dari dekat setiap karya, 4 di Zona A, 4 di Zona B, dan 4 di Zona C, masing-masing dengan kartu judul, kelompok, dan durasi. Tur ditutup dengan tampak atas. Video dilengkapi narasi, subtitle, musik latar, dan efek transisi. Isi layar adalah contoh.</p>
+    <span class="eyebrow">Simulasi · 3 video · masing-masing 1 menit · narasi, subtitle &amp; musik</span>
+    <h2>Simulasi ruang &amp; acara</h2>
+    <p class="lede">Tiga sudut pandang dari ruang yang sama. Semua isi layar, nama produk, dan suara adalah contoh, dan narasinya memakai suara sintetis.</p>
   </div>
   <div class="sim">
+    <div class="sim-tabs" role="tablist" aria-label="Pilih video simulasi">
+      <button type="button" role="tab" class="tab" id="tab-tour" data-v="tour" aria-selected="true">Tur ruang &amp; 12 karya</button>
+      <button type="button" role="tab" class="tab" id="tab-pov" data-v="pov" aria-selected="false">POV pengunjung</button>
+      <button type="button" role="tab" class="tab" id="tab-event" data-v="event" aria-selected="false">Acara pembukaan</button>
+    </div>
+    <p class="sim-desc" id="simDesc"></p>
     <video id="simVideo" controls playsinline preload="metadata" poster="simulasi-poster.jpg" src="simulasi-pameran.mp4"></video>
     <div class="sim-row">
       <button class="btn" type="button" id="sim3d">Buka versi 3D interaktif</button>
-      <p>Versi interaktif memutar tur yang sama di browser, dengan slider untuk berhenti di titik mana pun.</p>
+      <p>Versi interaktif memutar adegan yang sama di browser (tanpa suara), dengan slider untuk berhenti di titik mana pun.</p>
     </div>
-    <iframe id="simFrame" title="Simulasi 3D interaktif ruang pamer" hidden></iframe>
+    <iframe id="simFrame" title="Simulasi 3D interaktif" hidden></iframe>
   </div>
 </section>
 
@@ -1190,10 +1201,25 @@ catsEl.addEventListener("change", e => {
 updateProgress();
 
 /* ---------- SIMULASI 3D ---------- */
-document.getElementById("sim3d").addEventListener("click", e => {
-  const f = document.getElementById("simFrame");
-  if (f.hidden) { f.src = "simulasi.html"; f.hidden = false; e.target.textContent = "Tutup versi 3D"; try { document.getElementById("simVideo").pause(); } catch (err) {} }
-  else { f.src = "about:blank"; f.hidden = true; e.target.textContent = "Buka versi 3D interaktif"; }
+const SIMV = {
+  tour: ["simulasi-pameran.mp4", "simulasi-poster.jpg", "Kamera berkeliling dari gate, poster stand, totem, dan registrasi, lalu menyorot dari dekat 4 karya di setiap zona, lengkap dengan kartu judul, kelompok, dan durasi."],
+  pov: ["simulasi-pov.mp4", "simulasi-pov-poster.jpg", "Dilihat dari mata pengunjung: scan QR di poster stand, isi buku tamu, memakai headphone di Zona A, masuk ruang proyeksi, melihat mock-up dan animasi 3D, lalu pulang."],
+  event: ["simulasi-acara.mp4", "simulasi-acara-poster.jpg", "Pembukaan sesuai rundown: tamu datang, registrasi, MC membuka, sambutan kurator, hitung mundur dan semua layar menyala, screening, artist talk, tur, dan foto bersama 17 panitia."],
+};
+let simMode = "tour";
+const simVideo = document.getElementById("simVideo"), simFrame = document.getElementById("simFrame"), simBtn = document.getElementById("sim3d");
+function setSim(m) {
+  simMode = m;
+  document.querySelectorAll(".sim-tabs .tab").forEach(b => b.setAttribute("aria-selected", b.dataset.v === m ? "true" : "false"));
+  simVideo.pause(); simVideo.poster = SIMV[m][1]; simVideo.src = SIMV[m][0];
+  document.getElementById("simDesc").textContent = SIMV[m][2];
+  if (!simFrame.hidden) simFrame.src = "simulasi.html#" + m;
+}
+document.querySelectorAll(".sim-tabs .tab").forEach(b => b.addEventListener("click", () => setSim(b.dataset.v)));
+document.getElementById("simDesc").textContent = SIMV.tour[2];
+simBtn.addEventListener("click", () => {
+  if (simFrame.hidden) { simFrame.src = "simulasi.html#" + simMode; simFrame.hidden = false; simBtn.textContent = "Tutup versi 3D"; try { simVideo.pause(); } catch (err) {} }
+  else { simFrame.src = "about:blank"; simFrame.hidden = true; simBtn.textContent = "Buka versi 3D interaktif"; }
 });
 
 /* ---------- TEASER PLAYER ---------- */

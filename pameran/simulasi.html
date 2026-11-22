@@ -34,6 +34,25 @@
   .ctl input { flex: 1; accent-color: var(--mg); min-width: 0; }
   .render .ctl { display: none; }
   .render .cap, .render .title { transition: none; }
+  .phone { position: absolute; right: 7%; bottom: -4%; width: 200px; height: 360px; background: #0b0c12; border-radius: 26px; padding: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.6); transform: translateY(110%) rotate(-6deg); transition: none; }
+  .phone .scr { width: 100%; height: 100%; border-radius: 16px; background: #f4f4f0; color: #141726; padding: 14px 12px; overflow: hidden; font-size: 11px; }
+  .phone .scr b { font-family: "Unbounded", "Arial Black", sans-serif; font-size: 15px; display: block; }
+  .phone .scr .it { display: flex; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid #dfe2ee; }
+  .phone .scr .it i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .phone .scr .hd { font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: .1em; color: #5a6078; margin: 4px 0 8px; }
+  .hp { position: absolute; top: 54px; right: max(20px, env(safe-area-inset-right)); background: rgba(10,12,20,.78); border-left: 4px solid var(--vm); padding: 10px 14px; border-radius: 4px; display: flex; gap: 12px; align-items: center; opacity: 0; }
+  .hp .w { display: flex; gap: 3px; align-items: flex-end; height: 22px; }
+  .hp .w i { width: 4px; background: var(--vm); display: block; }
+  .hp small { display: block; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+  .hp b { font-size: 14px; }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+  .fade { position: absolute; inset: 0; background: #000; opacity: 0; display: grid; place-content: center; text-align: center; }
+  .fade h3 { margin: 0; font-family: "Unbounded", "Arial Black", sans-serif; font-size: clamp(22px, 4vw, 46px); color: #fff; }
+  .fade p { margin: 10px 0 0; font-family: "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; color: #a3aac2; }
+  .vign { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.45)); opacity: 0; }
+  .modes { display: flex; gap: 6px; }
+  .modes a { font: 600 13px "Plus Jakarta Sans", system-ui, sans-serif; color: var(--fg); text-decoration: none; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; padding: 7px 10px; }
+  .modes a[aria-current="true"] { background: rgba(255,255,255,.18); }
   .loading { position: fixed; inset: 0; display: grid; place-content: center; font-family: "JetBrains Mono", monospace; color: var(--muted); }
 </style>
 </head>
@@ -41,22 +60,41 @@
 <canvas id="c" aria-label="Simulasi 3D ruang pamer RENDER: gate masuk, registrasi, zona video marketing, ruang proyeksi motion graphic, zona 3D modeling" role="img"></canvas>
 <div class="loading" id="loading">Memuat ruang pamer…</div>
 <div class="hud">
-  <div class="brand"><span class="rec"></span><b>RENDER</b><span>simulasi ruang pamer</span></div>
+  <div class="vign" id="vign"></div>
+  <div class="brand"><span class="rec"></span><b>RENDER</b><span id="brandSub">simulasi ruang pamer</span></div>
   <div class="tc" id="tc">00:00:00:00</div>
-  <div class="title" id="title"><div><h1>RENDER</h1><p>Simulasi ruang pamer · 12 karya · 4 kelompok</p></div></div>
+  <div class="hp" id="hp"><div class="w"><i></i><i></i><i></i><i></i><i></i></div><div><small>Headphone · Zona A</small><b>Kopi Lereng: Pagi di Lereng</b></div></div>
+  <div class="phone" id="phone"><div class="scr"><b>RENDER</b><div class="hd">KATALOG DIGITAL · 12 KARYA</div>
+    <div class="it"><i style="background:#c8742f"></i>K1 · Kopi Lereng · 3 karya</div>
+    <div class="it"><i style="background:#e0402a"></i>K2 · Krispi Box · 3 karya</div>
+    <div class="it"><i style="background:#7a5cf0"></i>K3 · Sepatu Arunika · 3 karya</div>
+    <div class="it"><i style="background:#1d97d0"></i>K4 · Embun · 3 karya</div>
+    <div class="hd" style="margin-top:12px">ZONA A · VIDEO MARKETING</div>
+    <div class="it">Pagi di Lereng · 0:30</div><div class="it">Krispi Box · 0:30</div><div class="it">Arunika Run · 0:30</div><div class="it">Segar dari Pegunungan · 0:30</div>
+  </div></div>
+  <div class="title" id="title"><div><h1>RENDER</h1><p id="titleSub">Simulasi ruang pamer · 12 karya · 4 kelompok</p></div></div>
   <div class="cap" id="cap"><div class="eb" id="capEb"></div><h2 id="capT"></h2><p id="capS"></p></div>
   <div class="sub" id="sub"><span id="subT"></span></div>
   <div class="bar"><i id="bar"></i></div>
+  <div class="flash" id="flash"></div>
+  <div class="fade" id="fade"><div><h3 id="fadeT">Terima kasih sudah berkunjung</h3><p id="fadeS">RENDER · 12–19 Desember 2026</p></div></div>
 </div>
 <div class="ctl">
   <button type="button" id="play">Jeda</button>
+  <span class="modes"><a href="#tour" data-m="tour">Tur</a><a href="#pov" data-m="pov">POV</a><a href="#event" data-m="event">Acara</a></span>
   <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Posisi video simulasi">
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (async () => {
-const RENDER_MODE = location.hash === "#render";
+const HASH = location.hash.replace("#", "");
+const RENDER_MODE = HASH.startsWith("render");
+const MODE = HASH.includes("pov") ? "pov" : HASH.includes("event") ? "event" : "tour";
+document.querySelectorAll(".modes a").forEach(a => { a.setAttribute("aria-current", a.dataset.m === MODE ? "true" : "false"); a.addEventListener("click", e => { e.preventDefault(); location.hash = a.dataset.m; location.reload(); }); });
+const MODE_LABEL = { tour: ["simulasi ruang pamer", "Simulasi ruang pamer · 12 karya · 4 kelompok"], pov: ["POV pengunjung", "POV pengunjung · satu kunjungan"], event: ["simulasi acara pembukaan", "Pembukaan pameran · Sabtu, 12 Desember 2026"] };
+document.getElementById("brandSub").textContent = MODE_LABEL[MODE][0];
+document.getElementById("titleSub").textContent = MODE_LABEL[MODE][1];
 if (RENDER_MODE) document.documentElement.classList.add("render");
 try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2500))]); } catch (e) {}
 
@@ -157,7 +195,8 @@ for (const z of [-3, 1, 4]) {
 /* ---------- cahaya ---------- */
 scene.add(new THREE.HemisphereLight("#cfd7ff", "#1a1d2a", .55));
 scene.add(new THREE.AmbientLight("#ffffff", .18));
-const pl = (c, i, d, x, y, z) => { const l = new THREE.PointLight(c, i, d, 2); l.position.set(x, y, z); scene.add(l); return l; };
+const ptLights = [];
+const pl = (c, i, d, x, y, z) => { const l = new THREE.PointLight(c, i, d, 2); l.position.set(x, y, z); scene.add(l); l.userData.base = i; if (z < 6) ptLights.push(l); return l; };
 pl("#fff1dc", 1.3, 14, -5, 3.2, 1);
 pl("#fff1dc", 1.2, 14, 5, 3.2, -1);
 pl("#fff1dc", 1.1, 12, 2, 3.2, 4);
@@ -282,7 +321,7 @@ function posterStand(x, z, ry, tex) {
 const posterA = posterTex("pameran"), posterB = posterTex("karya");
 posterStand(-3.3, 7.7, .25, posterA);
 posterStand(3.1, 8.3, -.3, posterB);
-posterStand(2.6, 3.1, -.6, posterB);
+posterStand(-1.4, 4.6, .5, posterB);
 
 /* ---------- totem kubus ---------- */
 function totem(x, z, ry, spec) {
@@ -307,7 +346,8 @@ totem(-2.7, 4.9, .5, [[ringF, ringF], [arrA, whiteF], [arrC, whiteB], [ringF, ri
 
 /* ---------- registrasi ---------- */
 box(2.2, .95, .6, std("#e8eaf2"), 4.3, .475, 4.7);
-box(2.2, .3, .02, basicTex(signTex("REGISTRASI", "buku tamu · QR katalog", C.green).t), 4.3, .7, 4.39);
+box(2.2, .3, .02, std("#1d2232"), 4.3, .7, 4.4);
+plane(2.2, .3, new THREE.MeshBasicMaterial({ map: signTex("REGISTRASI", "buku tamu · QR katalog", C.green).t, transparent: true, toneMapped: false }), 4.3, .7, 4.385, Math.PI);
 const tab = box(.26, .02, .18, std("#0b0c12"), 3.9, .97, 4.65); tab.rotation.x = -.4;
 box(.24, .01, .16, std(C.td, { emissive: C.td, emissiveIntensity: .7 }), 3.9, .985, 4.65).rotation.x = -.4;
 
@@ -404,7 +444,7 @@ box(.4, .6, .4, std("#15171d"), -2.9, .3, -5.5); box(.4, .6, .4, std("#15171d"),
 
 /* ---------- AREA ARTIST TALK ---------- */
 box(3.2, .15, 1.4, std("#2b3040"), -3, .075, -.1);
-const talk = ctex(512, 288, (g, w, h) => {
+function talkDefault(g, w, h) {
   g.fillStyle = "#f4f4f0"; g.fillRect(0, 0, w, h);
   g.fillStyle = "#0e1018"; g.font = `800 30px ${FD}`; g.fillText("Dari brief", 28, 52); g.fillText("ke render", 28, 88);
   g.font = `400 15px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("ARTIST TALK · 19.30", 30, 118);
@@ -412,7 +452,30 @@ const talk = ctex(512, 288, (g, w, h) => {
   for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(-92, 260 - i * 25); g.lineTo(92, 260 - i * 25); g.stroke(); } g.restore();
   g.fillStyle = C.td; g.save(); g.translate(450, 0); bottlePath(g, 0, 260, 200); g.restore(); g.fill();
   g.font = `400 13px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("wireframe → final", 300, 280);
-});
+}
+const talkSlides = [
+  [0, 27, "Pembukaan", "RENDER", "PRODUK DALAM GERAK · 19.00"],
+  [41, 46, "Artist talk", "Kelompok 2", "KRISPI BOX · DARI BRIEF KE RENDER"],
+  [46, 61, "Artist talk", "Storyboard", "BRIEF → STORYBOARD → RENDER"],
+];
+const talk = tvScreen((g, w, h, t) => {
+  if (MODE !== "event") { talkDefault(g, w, h); return; }
+  if (t >= 27.4 && t < 31) {
+    g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+    const n = t < 28.6 ? "" : t < 29.6 ? "3" : t < 30.6 ? "2" : "1";
+    g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff";
+    if (n) { g.font = `800 190px ${FD}`; g.fillText(n, w / 2, h / 2 + 8); } else { g.font = `800 40px ${FD}`; g.fillText("Peresmian", w / 2, h / 2); }
+    g.textAlign = "left"; g.textBaseline = "alphabetic"; return;
+  }
+  if (t >= 31 && t < 41) { talkDefault(g, w, h); return; }
+  const sl = talkSlides.find(x => t >= x[0] && t < x[1]) || talkSlides[0];
+  g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+  g.fillStyle = C.vm; g.fillRect(0, h - 10, w / 3, 10); g.fillStyle = C.mg; g.fillRect(w / 3, h - 10, w / 3, 10); g.fillStyle = C.td; g.fillRect(2 * w / 3, h - 10, w / 3, 10);
+  g.font = `400 16px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sl[2].toUpperCase(), 30, 50);
+  g.font = `800 54px ${FD}`; g.fillStyle = "#fff"; g.fillText(sl[3], 28, 140);
+  g.font = `400 15px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sl[4], 30, 190);
+}, 512, 288);
+talk.noStandby = true; animTex.push(talk);
 box(1.5, .88, .06, std("#07080d"), -3, 1.55, -.6);
 plane(1.44, .82, basicTex(talk.t), -3, 1.55, -.565);
 cyl(.03, .03, 1.1, trackM, -3, .65, -.65); box(.6, .04, .4, trackM, -3, .17, -.65);
@@ -502,21 +565,21 @@ function person(x, z, ry, i, seated = false, panitia = false) {
 }
 let pi = 0;
 // luar
-person(-2.3, 9.9, Math.PI * .8, pi++); person(2.5, 11.8, Math.PI + .3, pi++);
+const outsideP = [person(-2.3, 9.9, Math.PI * .8, pi++), person(2.5, 11.8, Math.PI + .3, pi++)];
 // registrasi
 person(4.3, 5.25, Math.PI, pi++, false, true); person(3.6, 3.9, 0, pi++);
 // zona A
 person(-8.15, 2.75, -Math.PI / 2, pi++); person(-8.15, .15, -Math.PI / 2 + .2, pi++); person(-8.15, -2.5, -Math.PI / 2, pi++);
-person(-6.6, -1.3, -Math.PI / 2, pi++, true);
+person(-6.6, -1.3, Math.PI / 2, pi++, true);
 // artist talk
 person(-1.8, -.1, 0, pi++, false, true);
-[[-4.4, 1.3], [-3.7, 1.3], [-2.3, 1.3], [-3, 2.1], [-1.6, 2.1], [-4.4, 2.1]].forEach(([x, z]) => person(x, z, Math.PI, pi++, true));
+[[-4.4, 1.3], [-3.7, 1.3], [-2.3, 1.3], [-3, 2.1], [-1.6, 2.1], [-4.4, 2.1]].forEach(([x, z]) => person(x, z, 0, pi++, true));
 // zona B
-[[-1, -3.2], [.4, -3.2], [1.2, -2.6], [-.6, -2.6]].forEach(([x, z]) => person(x, z, Math.PI, pi++, true));
+[[-1, -3.2], [.4, -3.2], [1.2, -2.6], [-.6, -2.6]].forEach(([x, z]) => person(x, z, 0, pi++, true));
 // zona C
-person(5.0, -3.6, -Math.PI * .5, pi++); person(5.2, -1.2, -Math.PI * .4, pi++);
+person(5.0, -3.6, -Math.PI * .5, pi++); person(4.6, -2.6, -Math.PI * .4, pi++);
 const vrP = person(7, 1.2, Math.PI * .6, pi++); box(.22, .1, .14, std("#f4f4f0"), 0, 1.6, .1, vrP);
-person(6.0, 1.9, -Math.PI * .3, pi++, false, true);
+person(5.0, 1.6, -Math.PI * .3, pi++, false, true);
 // konsumsi
 person(7.2, 5.2, Math.PI, pi++); person(8.2, 3.9, 0, pi++);
 // pejalan
@@ -525,6 +588,51 @@ const walkers = [
   { g: person(0, 0, 0, pi++), f: t => [6.4 + Math.sin(t * .25) * .8, 3.6 + Math.cos(t * .25) * .5] },
   { g: person(0, 0, 0, pi++), f: t => [1.9 + Math.sin(t * .3) * .9, 2.9 + Math.cos(t * .3) * .5] },
 ];
+
+/* ---------- mode: acara pembukaan ---------- */
+const GCOL = ["#6d4fd8", "#d9472a", "#0f86b8", "#2f7d4f"];
+function colorPerson(g, col) { const m = std(col); g.traverse(o => { if (o.isMesh && o.geometry.type === "CylinderGeometry" && o.geometry.parameters.radiusTop > .15) o.material = m; }); return g; }
+const arrivals = [], timed = [];
+if (MODE === "pov") { walkers[1].g.visible = false; walkers[2].g.visible = false; walkers.length = 1; }
+if (MODE === "event") {
+  outsideP.forEach(o => o.visible = false);
+  walkers[2].g.visible = false; walkers.length = 2;
+  const cx = -2.6, cz = -.3, spots = [];
+  [[3.8, [38, 50, 62, 74, 86, 98, 110, 122]], [4.7, [42, 53, 64, 75, 86, 97, 108, 119]]].forEach(([r, angs]) => angs.forEach(a => {
+    const rad = a * Math.PI / 180; spots.push([cx + r * Math.cos(rad), cz + r * Math.sin(rad)]);
+  }));
+  spots.forEach(([x, z], i) => {
+    const face = Math.atan2(cx - x, cz - z);
+    if (i % 4 === 1 || i % 4 === 3) {
+      // tamu yang datang dari luar
+      const g = person(0, 0, 0, pi++);
+      const sx = (i % 2 ? 1 : -1) * (1.6 + (i % 3) * .6), sz = 10.2 + (i % 4) * .8;
+      const path = [[sx, sz], [(i % 2 ? .6 : -.6), 7.6], [(i % 2 ? .4 : -.4), 5.8], [-.2 + (i % 2) * .4, 4.0], [x, z]];
+      arrivals.push({ g, path, start: .2 + (i % 8) * .7, face });
+    } else {
+      const g = person(x, z, face, pi++);
+      g.userData.sway = i * .7;
+    }
+  });
+  // pembicara artist talk (duduk di depan panggung)
+  const stoolM = std("#3a4052");
+  [[-4.3, GCOL[0]], [-3.7, GCOL[1]], [-2.3, GCOL[2]], [-1.7, GCOL[3]]].forEach(([x, col]) => {
+    const st = cyl(.17, .17, .45, stoolM, x, .22, .75); const p = colorPerson(person(x, .75, Math.PI, pi++, true), col); timed.push([p, 40.5, 50.5]); timed.push([st, 40.5, 50.5]);
+  });
+  // foto bersama panitia di depan gate
+  const team = [[1, 5], [2, 5], [3, 4], [4, 3]];
+  const all = []; team.forEach(([k, n]) => { for (let i = 0; i < n; i++) all.push(GCOL[k - 1]); });
+  all.forEach((col, i) => {
+    const front = i < 9, idx = front ? i : i - 9;
+    const x = front ? -2.4 + idx * .6 : -2.1 + idx * .6, z = front ? 9.1 : 8.55;
+    const p = colorPerson(person(x, z, 0, pi++), col);
+    timed.push([p, 53.5, 61]);
+  });
+  // tamu di Zona C saat tur
+  [[6.9, -1.3], [7.3, -2.9], [6.8, -4.1], [6.2, -2.2], [6.4, -.2]].forEach(([x, z], i) => { const g = person(x, z, Math.PI / 2 + (i % 2 ? .3 : -.3), pi++); timed.push([g, 48.5, 61]); });
+  // fotografer
+  const ph = person(-1.7, 11.0, Math.PI * .9, pi++); box(.16, .1, .12, std("#15171d"), 0, 1.5, -.16, ph); timed.push([ph, 53.5, 61]);
+}
 
 /* ---------- jalur kamera ---------- */
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -568,10 +676,97 @@ function fovAt(t) {
   for (const [a, b] of closeups) { const k = Math.max(0, Math.min(1, Math.min((t - a + 1) / 1.2, (b + 1 - t) / 1.2))); f = Math.min(f, 60 - 22 * k * k * (3 - 2 * k)); }
   return f;
 }
+// --- POV pengunjung
+const povKeys = [
+  [0, V(.3, 1.62, 17), V(0, 1.9, 7.4)],
+  [4, V(.2, 1.62, 12.6), V(0, 2.2, 7.4)],
+  [7, V(-.6, 1.62, 10.2), V(-3.2, 1.45, 7.7)],
+  [9.6, V(-2.3, 1.62, 8.9), V(-3.3, 1.42, 7.7)],
+  [12.6, V(.2, 1.62, 7.9), V(.2, 1.6, 4)],
+  [15.2, V(2.9, 1.62, 4.0), V(4.0, .95, 4.6)],
+  [17.2, V(1.0, 1.62, 3.4), V(-4, 1.6, 2.0)],
+  [20.2, V(-6.9, 1.62, 4.2), V(-8.96, 1.6, 4.0)],
+  [23.8, V(-7.1, 1.62, 4.5), V(-8.96, 1.4, 4.8)],
+  [26.4, V(-6.6, 1.62, 1.4), V(-8.96, 1.55, .9)],
+  [29, V(-.8, 1.62, 3.4), V(-3, 1.35, -.6)],
+  [31, V(-.7, 1.62, .2), V(-1.6, 1.7, -6)],
+  [33, V(-2.2, 1.62, -2.6), V(-1.6, 1.75, -6)],
+  [35.6, V(-2.0, 1.62, -4.4), V(-.9, 1.7, -6)],
+  [38.6, V(1.9, 1.62, -4.5), V(2.3, 1.75, -6)],
+  [41, V(2.3, 1.62, -1.6), V(8.6, 1.5, -1.0)],
+  [44, V(6.3, 1.62, -.65), V(8.25, 1.15, -.65)],
+  [46.6, V(6.3, 1.62, -2.0), V(8.96, 1.8, -2.1)],
+  [49.6, V(6.2, 1.62, -3.6), V(8.96, 1.7, -4.4)],
+  [52.6, V(6.0, 1.62, 2.6), V(7.6, .95, 4.5)],
+  [55.6, V(3.0, 1.62, 2.6), V(0, 1.6, 6.5)],
+  [60, V(.2, 1.62, 7.6), V(0, 1.7, 12)],
+];
+const povPos = new THREE.CatmullRomCurve3(povKeys.map(k => k[1]), false, "centripetal");
+const povLook = new THREE.CatmullRomCurve3(povKeys.map(k => k[2]), false, "centripetal");
+function keyU(keysArr, t) {
+  let i = 0; while (i < keysArr.length - 2 && t >= keysArr[i + 1][0]) i++;
+  const l = Math.max(0, Math.min(1, (t - keysArr[i][0]) / (keysArr[i + 1][0] - keysArr[i][0])));
+  const e = l * l * (3 - 2 * l);
+  return (i + (l * .6 + e * .4)) / (keysArr.length - 1);
+}
+// --- acara: beberapa shot dengan potongan
+const shots = [
+  [0, 6, [V(0, 2.3, 18.5), V(0, 1.9, 13.2)], [V(0, 1.8, 7.4), V(0, 1.7, 7.4)], 55],
+  [6, 12, [V(1.7, 1.75, 2.6), V(1.2, 1.75, 2.9)], [V(4.2, 1.0, 4.8), V(4.0, 1.0, 5.0)], 55],
+  [12, 20, [V(2.8, 2.7, 5.0), V(2.2, 2.6, 4.6)], [V(-2.8, 1.3, -.2), V(-2.6, 1.3, -.3)], 58],
+  [20, 27, [V(-.4, 1.62, 2.1), V(-.7, 1.62, 1.8)], [V(-1.8, 1.45, -.1), V(-1.8, 1.45, -.1)], 42],
+  [27, 34, [V(1.4, 2.3, 4.6), V(.4, 2.3, 4.4)], [V(-5, 1.55, -.6), V(-6.5, 1.6, -.2)], 60],
+  [34, 41, [V(0, 1.75, -1.1), V(0, 1.7, -2.0)], [V(0, 1.6, -6), V(0, 1.65, -6)], 55],
+  [41, 49, [V(-.2, 2.1, 3.3), V(-.6, 2.05, 3.0)], [V(-3, 1.2, -.1), V(-3, 1.2, -.1)], 48],
+  [49, 54, [V(3.4, 1.7, .6), V(4.5, 1.7, -.4)], [V(8.5, 1.4, -2.0), V(8.6, 1.4, -2.8)], 55],
+  [54, 60.1, [V(0, 1.75, 14.6), V(0, 1.7, 14.0)], [V(0, 1.55, 8.6), V(0, 1.55, 8.6)], 50],
+];
+const _p = new THREE.Vector3(), _l = new THREE.Vector3();
+function camAt(t) {
+  if (MODE === "pov") {
+    const u = keyU(povKeys, t), u2 = keyU(povKeys, Math.min(DUR, t + .05));
+    povPos.getPoint(u, _p); povLook.getPoint(u, _l);
+    const sp = povPos.getPoint(u2).distanceTo(_p) / .05;
+    const k = Math.min(1, sp / .9);
+    _p.y += Math.sin(t * 11.2) * .022 * k; _p.x += Math.sin(t * 5.6) * .012 * k;
+    return { pos: _p, look: _l, fov: 62 };
+  }
+  if (MODE === "event") {
+    const sh = shots.find(x => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+    const l = Math.max(0, Math.min(1, (t - sh[0]) / (sh[1] - sh[0])));
+    _p.lerpVectors(sh[2][0], sh[2][1], l); _l.lerpVectors(sh[3][0], sh[3][1], l);
+    return { pos: _p, look: _l, fov: sh[4] };
+  }
+  const uu = camU(t);
+  posC.getPoint(uu, _p); lookC.getPoint(uu, _l);
+  return { pos: _p, look: _l, fov: fovAt(t) };
+}
+const CAPS_POV = [
+  [2.6, 7, "19.30 · tiba", "Gate masuk", "Dilihat dari mata pengunjung", C.vm],
+  [7, 12.4, "Poster stand", "Scan QR di poster", "Katalog digital terbuka di ponsel", C.mg],
+  [12.4, 17.2, "Registrasi", "Isi buku tamu di tablet", "Panitia K1 di meja registrasi", C.green],
+  [17.2, 27, "Zona A · video marketing", "Pakai headphone", "Mendengar audio iklan Kopi Lereng", C.vm],
+  [27, 31.5, "Area tengah", "Artist talk", "Kursi siap untuk sesi berikutnya", C.gold],
+  [31.5, 41, "Zona B · motion graphic", "Ruang proyeksi gelap", "4 layar, headphone di depan tiap layar", C.mg],
+  [41, 51.5, "Zona C · 3D modeling", "Mock-up dan animasi 3D", "Lihat produknya, lalu animasinya", C.td],
+  [51.5, 55.6, "Sudut kanan", "Konsumsi", "Ambil minum sebelum pulang", C.td],
+  [55.6, 58, "Pintu keluar", "Selesai berkunjung", "Sekitar 25 menit untuk 12 karya", C.fg],
+];
+const CAPS_EVENT = [
+  [2.6, 6, "18.30 · Tamu datang", "Gate dan area luar", "Tamu undangan, dosen, dan pengunjung umum", C.vm],
+  [6, 12, "18.45 · Registrasi", "Buku tamu & welcome drink", "Kelompok 1 dan 4 di meja registrasi", C.green],
+  [12, 20, "19.00 · Pembukaan", "MC membuka acara", "Layar karya masih standby", C.gold],
+  [20, 27, "19.05 · Sambutan", "Sambutan kurator", "Tegar, PJ Kelompok 1", C.mg],
+  [27, 34, "19.10 · Peresmian", "Hitung mundur, semua layar menyala", "Operator: Kelompok 3", C.vm],
+  [34, 41, "19.20 · Screening", "Showreel di Zona B", "4 layar proyeksi memutar bersamaan", C.mg],
+  [41, 49, "19.30 · Artist talk", "Perwakilan 4 kelompok", "Kelompok 2 membedah Krispi Box", C.gold],
+  [49, 54, "20.10 · Tur karya", "Live render & tur Zona C", "Tamu berkeliling dengan pendamping", C.td],
+  [54, 60.1, "21.00 · Penutupan", "Foto bersama panitia", "17 orang · 4 kelompok", C.fg],
+];
 const VM = [["Pagi di Lereng", "iklan live action · 30 dtk · 16:9"], ["Krispi Box", "iklan media sosial · 30 dtk · 9:16"], ["Arunika Run", "iklan live action · 30 dtk · 16:9"], ["Segar dari Pegunungan", "iklan · 30 dtk · 16:9"]];
 const MG = [["Seduh Pelan", "kinetic typography · 20 dtk"], ["Renyah Gurih", "animasi 2D · 20 dtk"], ["Lari Lebih Ringan", "kinetic typography · 20 dtk"], ["Segar Jernih Alami", "animasi 2D · 20 dtk"]];
 const TD = [["Packshot kemasan", "animasi 3D · 15 dtk · Blender"], ["CGI ad kotak", "animasi 3D · 20 dtk · Blender"], ["Turntable sepatu", "animasi 3D · 15 dtk · Blender"], ["Exploded view botol", "animasi 3D · 20 dtk · Blender"]];
-const caps = [
+let caps = [
   [2.6, 5.8, "Luar ruang · pintu masuk", "Gate masuk (gapura)", "4,6 × 3,6 m · rangka hollow + print albatros", C.vm],
   [5.8, 8, "Luar ruang", "Poster stand (tripod)", "Poster karya di foam board A1 · QR ke video", C.mg],
   [8, 10.2, "Luar ruang · penunjuk arah", "Totem kubus", "Kubus 56 cm × 4 tingkat · arah tiap zona", C.mg],
@@ -584,26 +779,59 @@ caps.push([25.2, 27.7, "Area tengah", "Artist talk", "TV 65\" untuk membedah pro
 caps.push([51.3, 55.2, "Sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2 m · konsumsi jauh dari perangkat", C.td]);
 caps.push([55.2, 60.1, "Tampak atas", "12 karya · 4 kelompok", "Kopi Lereng · Krispi Box · Sepatu Arunika · Embun", C.fg]);
 caps.sort((a, b) => a[0] - b[0]);
-const SUBS = [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]];
+if (MODE === "pov") caps = CAPS_POV; else if (MODE === "event") caps = CAPS_EVENT;
+const SUBS_ALL = { tour: [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]], pov: [[0.8, 3.43, "Malam ini saya mampir ke pameran Render."], [4.6, 6.44, "Gate-nya kelihatan dari jauh."], [8.0, 11.73, "Ada poster karya dengan kode QR. Saya scan dulu."], [12.8, 15.31, "Isi buku tamu di tablet, lalu masuk."], [16.6, 19.87, "Zona A. Saya pakai headphone di layar pertama."], [21.2, 24.8, "Audio iklan: Kopi Lereng. Seduh pelan, nikmati pagi."], [27.0, 30.55, "Area artist talk masih sepi, kursinya sudah siap."], [31.6, 35.32, "Ruang proyeksinya gelap, tulisannya terasa besar sekali."], [36.4, 40.62, "Tiap layar punya headphone sendiri, jadi suaranya tidak bertabrakan."], [41.8, 46.16, "Di Zona C, mock-up produknya ada tepat di depan layar animasinya."], [47.0, 50.85, "Jadi bisa membandingkan bentuk asli dan versi tiga dimensinya."], [52.2, 54.72, "Sebelum pulang, ambil minum dulu."], [55.4, 59.67, "Dua belas karya, sekitar dua puluh lima menit. Seru juga."]], event: [[6.6, 10.18, "Panitia: Silakan isi buku tamu dulu. Minumannya di sebelah kanan."], [12.8, 19.13, "MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak."], [20.3, 26.4, "Kurator: Dua belas karya ini lahir dari empat kelompok. Satu produk, tiga cara bercerita."], [26.5, 28.58, "MC: Mari kita resmikan bersama."], [28.6, 29.28, "MC: Tiga!"], [29.6, 30.24, "MC: Dua!"], [30.6, 31.35, "MC: Satu!"], [34.4, 37.37, "MC: Selanjutnya, screening showreel di Zona B."], [41.4, 45.0, "Moderator: Kita mulai artist talk. Silakan, Kelompok Dua."], [44.9, 49.58, "Kelompok 2: Kami mulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi."], [49.6, 53.18, "MC: Silakan berkeliling. Live render dimulai di Zona C."], [54.2, 56.61, "Fotografer: Panitia, merapat! Foto bersama!"], [56.51, 57.99, "Fotografer: Satu, dua, tiga!"]] };
+const SUBS = SUBS_ALL[MODE];
 const capEl = document.getElementById("cap"), capEb = document.getElementById("capEb"), capT = document.getElementById("capT"), capS = document.getElementById("capS");
 const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
 let lastCap = -1;
 const subEl = document.getElementById("sub"), subT = document.getElementById("subT");
+const phoneEl = document.getElementById("phone"), hpEl = document.getElementById("hp"), hpBars = [...hpEl.querySelectorAll(".w i")];
+const flashEl = document.getElementById("flash"), fadeEl = document.getElementById("fade"), vignEl = document.getElementById("vign");
+animTex.forEach((a, i) => a.onAt = 31 + i * .07);
+function drawStandby(a, t) {
+  const g = a.g, w = a.c.width, h = a.c.height;
+  g.fillStyle = "#07080d"; g.fillRect(0, 0, w, h);
+  g.globalAlpha = .55 + .2 * Math.sin(t * 2);
+  g.font = `800 ${Math.round(w * .09)}px ${FD}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#eef0fa";
+  g.fillText("RENDER", w / 2, h / 2 - h * .05);
+  g.font = `400 ${Math.round(w * .03)}px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("SEGERA DIMULAI · 19.00", w / 2, h / 2 + h * .14);
+  g.globalAlpha = 1; g.textAlign = "left"; g.textBaseline = "alphabetic";
+}
 const pad = n => String(n).padStart(2, "0");
 
 function renderAt(t) {
   t = Math.max(0, Math.min(DUR, t));
-  for (const a of animTex) { a.draw(a.g, a.c.width, a.c.height, t); a.t.needsUpdate = true; }
+  for (const a of animTex) {
+    if (MODE === "event" && !a.noStandby && t < a.onAt) drawStandby(a, t); else a.draw(a.g, a.c.width, a.c.height, t);
+    a.t.needsUpdate = true;
+  }
+  if (MODE === "event") {
+    const lf = t < 31 ? .5 : Math.min(1, .5 + (t - 31) * .5);
+    ptLights.forEach(l => l.intensity = l.userData.base * lf);
+    timed.forEach(([o, a0, a1]) => o.visible = t >= a0 && t < a1);
+    arrivals.forEach(ar => {
+      const d = Math.max(0, t - ar.start) * 1.25;
+      let rem = d, pos = ar.path[0], dir = [0, -1], moving = false;
+      for (let k = 0; k < ar.path.length - 1; k++) {
+        const A = ar.path[k], B = ar.path[k + 1], L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+        if (rem <= L) { const f = rem / L; pos = [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f]; dir = [B[0] - A[0], B[1] - A[1]]; moving = d > 0; break; }
+        rem -= L; pos = B;
+      }
+      ar.g.position.set(pos[0], moving ? Math.abs(Math.sin(t * 7)) * .02 : 0, pos[1]);
+      ar.g.rotation.y = moving ? Math.atan2(dir[0], dir[1]) : ar.face;
+    });
+  }
   bottles.forEach((b, i) => b.rotation.y = t * (.6 + i * .1));
   walkers.forEach(w => {
     const [x, z] = w.f(t), [x2, z2] = w.f(t + .05);
     w.g.position.set(x, Math.abs(Math.sin(t * 7)) * .02, z); w.g.rotation.y = Math.atan2(x2 - x, z2 - z);
   });
   const u = t / DUR;
-  const uu = camU(t);
-  camera.position.copy(posC.getPoint(uu));
-  camera.lookAt(lookC.getPoint(uu));
-  const fv = fovAt(t); if (Math.abs(camera.fov - fv) > .01) { camera.fov = fv; camera.updateProjectionMatrix(); }
+  const cam = camAt(t);
+  camera.position.copy(cam.pos);
+  camera.lookAt(cam.look);
+  if (Math.abs(camera.fov - cam.fov) > .01) { camera.fov = cam.fov; camera.updateProjectionMatrix(); }
   ceiling.visible = camera.position.y < 3.4;
   const cl = v => Math.max(0, Math.min(1, v));
   titleEl.style.opacity = cl((2.4 - t) / .5);
@@ -611,6 +839,21 @@ function renderAt(t) {
   capEl.style.opacity = ci < 0 ? 0 : cl(Math.min((t - caps[ci][0]) / .35, (caps[ci][1] - t) / .35, 1));
   if (ci >= 0 && ci === caps.length - 1) capEl.style.opacity = cl((t - caps[ci][0]) / .35);
   if (ci >= 0 && ci !== lastCap) { const c = caps[ci]; capEb.textContent = c[2]; capT.textContent = c[3]; capS.textContent = c[4]; capEl.style.setProperty("--c", c[5]); lastCap = ci; }
+  // overlay per mode
+  const win = (a, b, r = .35) => cl(Math.min((t - a) / r, (b - t) / r, 1));
+  if (MODE === "pov") {
+    const ph = win(9.6, 13.2, .5);
+    phoneEl.style.transform = `translateY(${(1 - ph) * 110}%) rotate(${-6 + ph * 4}deg)`;
+    hpEl.style.opacity = win(19.4, 26.6);
+    hpBars.forEach((b, i) => b.style.height = (6 + Math.abs(Math.sin(t * 9 + i * 1.3)) * 16) + "px");
+    vignEl.style.opacity = .9;
+    fadeEl.style.opacity = cl((t - 57.6) / 1.2);
+  }
+  if (MODE === "event") {
+    let fl = 0; for (const ft of [57.9, 58.7]) fl = Math.max(fl, cl(1 - Math.abs(t - ft) / .12));
+    flashEl.style.opacity = fl * .9;
+    fadeEl.style.opacity = 0;
+  }
   const sb = SUBS.find(x => t >= x[0] && t < x[1]);
   subT.textContent = sb ? sb[2] : ""; subEl.style.opacity = sb ? 1 : 0;
   const f = Math.floor(t * FPS);
