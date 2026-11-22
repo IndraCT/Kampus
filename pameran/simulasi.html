@@ -72,6 +72,8 @@
   .rd li.past .tm::after { content: " ✓"; color: #7fe3a8; }
   .rd li.now { background: rgba(255,255,255,.08); border-left-color: var(--c); }
   .rd li.now .tm { color: #fff; }
+  .ph2 { position: absolute; right: 7%; bottom: 14%; height: 70%; aspect-ratio: 1 / 2; border: 9px solid #0b0c12; border-radius: 30px; box-shadow: 0 24px 60px rgba(0,0,0,.65); opacity: 0; background: #0b0c12; }
+  .dim { position: absolute; inset: 0; background: rgba(8,10,16,.55); opacity: 0; }
   .loading { position: fixed; inset: 0; display: grid; place-content: center; font-family: "JetBrains Mono", monospace; color: var(--muted); }
 </style>
 </head>
@@ -81,6 +83,7 @@
 <aside class="rd" id="rd" aria-label="Rundown acara pembukaan"><div class="rd-h"><small>RUNDOWN PEMBUKAAN</small><b id="rdClock">18.30</b><span>Sabtu, 12 Desember 2026</span></div><ol id="rdList"></ol></aside>
 <div class="hud">
   <div class="vign" id="vign"></div>
+  <div class="dim" id="dim"></div>
   <div class="brand"><span class="rec"></span><b>RENDER</b><span id="brandSub">simulasi ruang pamer</span></div>
   <div class="tc" id="tc">00:00:00:00</div>
   <div class="hp" id="hp"><div class="w"><i></i><i></i><i></i><i></i><i></i></div><div><small>Headphone · Zona A</small><b>Kopi Lereng: Pagi di Lereng</b></div></div>
@@ -95,6 +98,7 @@
   <div class="title" id="title"><div><h1>RENDER</h1><p id="titleSub">Simulasi ruang pamer · 12 karya · 4 kelompok</p></div></div>
   <div class="cap" id="cap"><div class="eb" id="capEb"></div><h2 id="capT"></h2><p id="capS"></p></div>
   <div class="sub" id="sub"><span id="subT"></span></div>
+  <canvas class="ph2" id="ph2" width="540" height="1080" aria-hidden="true"></canvas>
   <div class="bar"><i id="bar"></i></div>
   <div class="flash" id="flash"></div>
   <div class="fade" id="fade"><div><h3 id="fadeT">Terima kasih sudah berkunjung</h3><p id="fadeS">RENDER · 12–19 Desember 2026</p></div></div>
@@ -121,12 +125,12 @@ try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2
 
 const C = { ink: "#0e1018", fg: "#eef0fa", vm: "#ff7a59", mg: "#a58cff", td: "#3fbdf0", green: "#2f9d63", gold: "#f4b740", paper: "#f4f4f0" };
 const FD = '"Unbounded", "Arial Black", sans-serif', FB = '"Plus Jakarta Sans", Arial, sans-serif', FM = '"JetBrains Mono", monospace';
-const DUR = MODE === "event" ? 180 : 60, FPS = 30;
-const EVT = {"tiga": 61.6, "dua": 62.6, "satu": 63.6, "P": 64.2, "flash": [157.13, 157.93]};
+const DUR = MODE === "event" ? 230 : 60, FPS = 30;
+const EVT = {"tiga": 61.599999999999994, "dua": 62.599999999999994, "satu": 63.599999999999994, "P": 64.2, "flash": [157.13, 157.93]};
 
 /* ---------- renderer ---------- */
 const canvas = document.getElementById("c");
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(RENDER_MODE ? 1 : Math.min(2, devicePixelRatio || 1));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -301,14 +305,29 @@ function signTex(text, sub, col) {
     g.font = `400 24px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText(sub, 42, 100);
   });
 }
-function labelTex(artist, title, meta, col, sold) {
-  return ctex(256, 180, (g, w, h) => {
+function qrDraw(g, x, y, size, seed) {
+  const n = 21, c = size / n; g.fillStyle = "#fff"; g.fillRect(x - c, y - c, size + 2 * c, size + 2 * c); g.fillStyle = "#16181f";
+  const finder = (fx, fy) => { g.fillRect(x + fx * c, y + fy * c, 7 * c, 7 * c); g.fillStyle = "#fff"; g.fillRect(x + (fx + 1) * c, y + (fy + 1) * c, 5 * c, 5 * c); g.fillStyle = "#16181f"; g.fillRect(x + (fx + 2) * c, y + (fy + 2) * c, 3 * c, 3 * c); };
+  finder(0, 0); finder(14, 0); finder(0, 14);
+  let r = seed * 9301 + 49297;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    if ((i < 8 && j < 8) || (i > 12 && j < 8) || (i < 8 && j > 12)) continue;
+    r = (r * 9301 + 49297) % 233280; if (r / 233280 > .52) g.fillRect(x + i * c, y + j * c, c, c);
+  }
+}
+function labelTex(artist, title, meta, col, sold, price) {
+  return ctex(512, 360, (g) => {
+    g.scale(2, 2); const w = 256, h = 180;
     g.fillStyle = "#fbfbf8"; g.fillRect(0, 0, w, h); g.fillStyle = col; g.fillRect(0, 0, 8, h);
-    g.fillStyle = "#16181f"; g.font = `700 20px ${FB}`; g.fillText(artist, 22, 36);
-    g.font = `800 20px ${FD}`; g.fillText(title, 22, 70);
-    g.font = `400 13px ${FM}`; g.fillStyle = "#5a6078"; meta.forEach((m, i) => g.fillText(m, 22, 100 + i * 20));
-    if (sold) { g.fillStyle = "#e0272f"; g.beginPath(); g.arc(230, 30, 11, 0, 7); g.fill(); }
-    g.fillStyle = "#16181f"; for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) if ((i * 7 + j * 3) % 4 !== 0) g.fillRect(196 + i * 9, 120 + j * 9, 8, 8);
+    g.fillStyle = "#16181f"; g.font = `700 17px ${FB}`; g.fillText(artist, 20, 28);
+    g.font = `800 17px ${FD}`; g.fillText(title, 20, 54);
+    g.font = `400 11px ${FM}`; g.fillStyle = "#5a6078"; meta.forEach((m, i) => g.fillText(m, 20, 78 + i * 16));
+    g.strokeStyle = "#e2e3ea"; g.beginPath(); g.moveTo(20, 118); g.lineTo(178, 118); g.stroke();
+    g.fillStyle = "#16181f"; g.font = `700 13px ${FB}`; g.fillText(price || "Rp —", 20, 140);
+    g.font = `400 10px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("lisensi penggunaan 1 tahun", 20, 156);
+    qrDraw(g, 196, 112, 48, title.length + artist.length);
+    g.font = `600 8px ${FM}`; g.fillStyle = "#5a6078"; g.fillText("SCAN", 207, 174);
+    if (sold) { g.fillStyle = "#e0272f"; g.beginPath(); g.arc(232, 26, 11, 0, 7); g.fill(); }
   });
 }
 
@@ -372,6 +391,17 @@ box(2.2, .3, .02, std("#1d2232"), 4.3, .7, 4.4);
 plane(2.2, .3, new THREE.MeshBasicMaterial({ map: signTex("REGISTRASI", "buku tamu · QR katalog", C.green).t, transparent: true, toneMapped: false }), 4.3, .7, 4.385, Math.PI);
 const tab = box(.26, .02, .18, std("#0b0c12"), 3.9, .97, 4.65); tab.rotation.x = -.4;
 box(.24, .01, .16, std(C.td, { emissive: C.td, emissiveIntensity: .7 }), 3.9, .985, 4.65).rotation.x = -.4;
+const qrStand = ctex(400, 580, (g, w, h) => {
+  g.fillStyle = "#0e1018"; g.fillRect(0, 0, w, h);
+  g.fillStyle = C.vm; g.fillRect(0, 0, w / 3, 12); g.fillStyle = C.mg; g.fillRect(w / 3, 0, w / 3, 12); g.fillStyle = C.td; g.fillRect(2 * w / 3, 0, w / 3, 12);
+  g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.textAlign = "center"; g.fillText("RENDER", w / 2, 78);
+  g.font = `600 22px ${FB}`; g.fillText("Katalog digital", w / 2, 116);
+  qrDraw(g, 70, 150, 260, 7);
+  g.font = `400 18px ${FM}`; g.fillStyle = "#a3aac2"; g.fillText("SCAN · 12 KARYA · HARGA", w / 2, 470);
+  g.fillText("render-kampus/katalog", w / 2, 500); g.textAlign = "left";
+});
+const qrStandM = plane(.2, .29, basicTex(qrStand.t), 3.35, 1.1, 4.39, Math.PI);
+box(.21, .3, .01, std("#c9cdd8", { roughness: .2 }), 3.35, 1.1, 4.4);
 
 /* ---------- ZONA A: dinding layar ---------- */
 function tvScreen(draw, w = 512, h = 288) { const t = ctex(w, h); t.draw = draw; return t; }
@@ -410,7 +440,8 @@ const BR = [
   { k: 3, name: "Sepatu Arunika", col: "#7a5cf0" },
   { k: 4, name: "Embun", col: "#1d97d0" },
 ];
-const labels = BR.map((b, i) => labelTex(`Kelompok ${b.k}`, b.name, ["Video marketing · 0:30", "1920×1080 · stereo"], "#d9472a", i === 1));
+const PRICE_VM = ["Rp 7.500.000", "Rp 5.000.000", "Rp 6.500.000", "Rp 6.000.000"];
+const labels = BR.map((b, i) => labelTex(`Kelompok ${b.k}`, b.name, ["Video marketing · 0:30", "1920×1080 · stereo"], "#d9472a", false, PRICE_VM[i]));
 tvZ.forEach((z, i) => {
   const tv = tvScreen(tvDraws[i]); animTex.push(tv);
   box(.06, .76, 1.32, std("#07080d", { metalness: .4, roughness: .3 }), -8.96, 1.55, z);
@@ -421,6 +452,8 @@ tvZ.forEach((z, i) => {
   // spot ke label
   const sp = new THREE.SpotLight("#fff1dc", .9, 5, .35, .6, 1.5); sp.position.set(-7.6, 3.4, z + .9); sp.target.position.set(-8.95, 1.3, z + .9); scene.add(sp, sp.target);
 });
+const redDot = new THREE.Mesh(new THREE.CircleGeometry(.0115, 20), new THREE.MeshBasicMaterial({ color: "#e0272f", toneMapped: false }));
+redDot.position.set(-8.972, 1.3 + (.5 - 26 / 180) * .18, tvZ[1] + .9 - (232 / 256 - .5) * .26); redDot.rotation.y = Math.PI / 2; scene.add(redDot);
 plane(5, .62, new THREE.MeshBasicMaterial({ map: signTex("ZONA A · VIDEO MARKETING", "4 layar · headphone · kelompok 1–4", C.vm).t, transparent: true, toneMapped: false }), -8.94, 2.85, 0, Math.PI / 2);
 box(1.6, .42, .45, std("#3a4052"), -6.6, .21, -1.3);
 box(1.6, .42, .45, std("#3a4052"), -6.6, .21, 1.3);
@@ -450,7 +483,7 @@ BR.forEach((b, i) => {
   animTex.push(s);
   const x = mgX[i];
   plane(1.6, .9, basicTex(s.t), x, 1.75, -5.98);
-  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Motion graphic · 0:20", "1920×1080 · loop"], "#6d4fd8").t), x + .62, .98, -5.97);
+  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Motion graphic · 0:20", "1920×1080 · loop"], "#6d4fd8", false, "Rp 4.000.000").t), x + .62, .98, -5.97);
   // proyektor short-throw di plafon
   box(.3, .12, .26, std("#d7dbe6"), x, 3.28, -4.9);
   cyl(.012, .012, .25, trackM, x, 3.47, -4.9);
@@ -528,7 +561,7 @@ function testBars(g, w, h, label) {
   g.fillStyle = "#fff"; g.font = `600 ${Math.round(h * .08)}px ${FM}`; g.textAlign = "center"; g.textBaseline = "middle";
   g.fillText(label, w / 2, h * .86); g.textAlign = "left"; g.textBaseline = "alphabetic";
 }
-talk.noStandby = true; animTex.push(talk);
+talk.noStandby = true; talk.useBase = true; animTex.push(talk);
 box(1.5, .88, .06, std("#07080d"), -3, 1.55, -.6);
 plane(1.44, .82, basicTex(talk.t), -3, 1.55, -.565);
 cyl(.03, .03, 1.1, trackM, -3, .65, -.65); box(.6, .04, .4, trackM, -3, .17, -.65);
@@ -588,7 +621,7 @@ BR.forEach((b, k) => {
   const z = zC(k);
   box(.06, .76, 1.32, std("#07080d", { metalness: .4, roughness: .3 }), 8.96, 1.78, z);
   plane(1.26, .71, basicTex(tv.t), 8.92, 1.78, z, -Math.PI / 2);
-  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Animasi 3D · " + sub3d[k].split("· ")[1], "Blender · 1080p"], "#0f86b8").t), 8.98, 1.3, z + .58, -Math.PI / 2);
+  plane(.26, .18, basicTex(labelTex(`Kelompok ${b.k}`, b.name, ["Animasi 3D · " + sub3d[k].split("· ")[1], "Blender · 1080p"], "#0f86b8", false, "Rp 6.000.000").t), 8.98, 1.3, z + .58, -Math.PI / 2);
 });
 plane(4.6, .58, new THREE.MeshBasicMaterial({ map: signTex("ZONA C · 3D MODELING", "4 animasi 3D · mock-up di pedestal", C.td).t, transparent: true, toneMapped: false }), 8.94, 2.85, -3.3, -Math.PI / 2);
 // stasiun VR
@@ -711,7 +744,7 @@ if (MODE === "event") {
     g.fillStyle = "#fff"; g.font = `600 13px ${FM}`; g.fillText("LIVE RENDER · EMBUN", 80, 15);
     g.fillStyle = "#a3aac2"; g.fillText(`FRAME ${String(Math.floor(prog * 30)).padStart(3, "0")}/030`, 380, 225);
   });
-  lt.noStandby = true; animTex.push(lt);
+  lt.noStandby = true; lt.useBase = true; animTex.push(lt);
   const scr = plane(.5, .31, basicTex(lt.t), 0, .97, -.15, 0, lr); scr.rotation.x = -.2;
   const demo = colorPerson(person(5.25, -4.55, Math.PI * .75, pi++), GCOL[2]); timed.push([demo, 129.5, 166]);
   timed.push([lr, 129.5, 999]);
@@ -880,7 +913,7 @@ caps.push([51.3, 55.2, "Sudut kanan", "Stasiun VR & konsumsi", "Area aman 2 × 2
 caps.push([55.2, 60.1, "Tampak atas", "12 karya · 4 kelompok", "Kopi Lereng · Krispi Box · Sepatu Arunika · Embun", C.fg]);
 caps.sort((a, b) => a[0] - b[0]);
 if (MODE === "pov") caps = CAPS_POV; else if (MODE === "event") caps = CAPS_EVENT;
-const SUBS_ALL = { tour: [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]], pov: [[0.8, 3.43, "Malam ini saya mampir ke pameran Render."], [4.6, 6.44, "Gate-nya kelihatan dari jauh."], [8.0, 11.73, "Ada poster karya dengan kode QR. Saya scan dulu."], [12.8, 15.31, "Isi buku tamu di tablet, lalu masuk."], [16.6, 19.87, "Zona A. Saya pakai headphone di layar pertama."], [21.2, 24.8, "Audio iklan: Kopi Lereng. Seduh pelan, nikmati pagi."], [27.0, 30.55, "Area artist talk masih sepi, kursinya sudah siap."], [31.6, 35.32, "Ruang proyeksinya gelap, tulisannya terasa besar sekali."], [36.4, 40.62, "Tiap layar punya headphone sendiri, jadi suaranya tidak bertabrakan."], [41.8, 46.16, "Di Zona C, mock-up produknya ada tepat di depan layar animasinya."], [47.0, 50.85, "Jadi bisa membandingkan bentuk asli dan versi tiga dimensinya."], [52.2, 54.72, "Sebelum pulang, ambil minum dulu."], [55.4, 59.67, "Dua belas karya, sekitar dua puluh lima menit. Seru juga."]], event: [[3.0, 7.96, "Operator K3: Zona A, aman. Zona B, aman. Zona C, aman. Proyektor siap."], [10.8, 16.4, "PJ Kelompok 4: Oke teman-teman, tiga puluh menit lagi tamu datang. Semua ke posisi masing-masing, ya."], [24.6, 29.32, "Panitia: Selamat malam. Silakan isi buku tamu dulu, minumannya di sebelah kanan."], [35.6, 41.93, "MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak."], [42.6, 49.28, "Ketua panitia: Terima kasih atas kehadirannya. Pameran ini hasil kerja tujuh belas mahasiswa dalam empat kelompok."], [49.6, 55.57, "Kurator: Dua belas karya ini lahir dari empat produk. Satu produk, tiga cara bercerita."], [57.0, 60.82, "MC: Mari kita resmikan bersama. Hitung mundur dari tiga."], [61.6, 62.28, "MC: Tiga!"], [62.6, 63.24, "MC: Dua!"], [63.6, 64.35, "MC: Satu!"], [69.0, 72.06, "MC: Silakan menuju Zona B untuk screening showreel."], [82.6, 86.31, "Moderator: Kita mulai artist talk. Kelompok Satu, silakan."], [86.21, 93.26, "Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi."], [94.6, 96.88, "Moderator: Terima kasih. Kelompok Dua."], [96.78, 102.07, "Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi."], [105.8, 106.98, "Moderator: Kelompok Tiga."], [107.2, 112.36, "Kelompok 3: Untuk Sepatu Arunika, kami fokus pada gerak lari, dari video sampai turntable."], [116.4, 117.61, "Moderator: Kelompok Empat."], [117.8, 121.97, "Kelompok 4: Embun memakai exploded view, supaya isi botolnya terlihat jelas."], [123.0, 126.01, "Penanya: Berapa lama proses render animasi tiga dimensinya?"], [126.4, 129.65, "Kelompok 2: Sekitar dua hari, untuk dua puluh detik animasi."], [130.8, 134.38, "MC: Silakan berkeliling. Live render dimulai di Zona C."], [137.0, 142.44, "Kelompok 3: Ini model botol Embun. Kita render langsung, satu frame sekitar tiga puluh detik."], [150.0, 152.41, "Fotografer: Panitia, merapat! Foto bersama!"], [155.8, 157.28, "Fotografer: Satu, dua, tiga!"], [167.0, 173.46, "MC: Terima kasih. Pameran dibuka untuk umum mulai besok, pukul sepuluh pagi. Selamat malam."]] };
+const SUBS_ALL = { tour: [[0.8, 5.55, "Selamat datang di Render, pameran karya digital, Produk dalam Gerak."], [5.6, 9.18, "Gate masuk memakai key visual dari animasi tiga dimensi."], [9.6, 14.26, "Poster stand, totem kubus, dan meja registrasi menyambut pengunjung."], [14.21, 18.95, "Zona A menampilkan empat iklan video marketing, satu dari setiap kelompok."], [19.0, 25.92, "Kopi Lereng, Krispi Box, Sepatu Arunika, dan Embun, masing-masing dengan headphone dan label karya."], [25.87, 30.41, "Zona B adalah ruang proyeksi gelap, untuk empat karya motion graphic."], [30.4, 35.3, "Tipografi kinetik dan animasi dua dimensi diputar berulang di layar masing-masing."], [35.8, 39.6, "Pengunjung mendengarkan audio lewat headphone di depan tiap layar."], [40.0, 43.15, "Zona C memutar empat animasi tiga dimensi produk."], [43.4, 50.17, "Packshot, iklan CGI, turntable, dan exploded view, didampingi mock-up produk di pedestal."], [50.12, 54.81, "Setiap layar punya label berisi kelompok, durasi, dan format karya."], [54.76, 58.52, "Dua belas karya. Empat kelompok. Satu ruang."], [58.47, 60.14, "Sampai jumpa di Render."]], pov: [[0.8, 3.43, "Malam ini saya mampir ke pameran Render."], [4.6, 6.44, "Gate-nya kelihatan dari jauh."], [8.0, 11.73, "Ada poster karya dengan kode QR. Saya scan dulu."], [12.8, 15.31, "Isi buku tamu di tablet, lalu masuk."], [16.6, 19.87, "Zona A. Saya pakai headphone di layar pertama."], [21.2, 24.8, "Audio iklan: Kopi Lereng. Seduh pelan, nikmati pagi."], [27.0, 30.55, "Area artist talk masih sepi, kursinya sudah siap."], [31.6, 35.32, "Ruang proyeksinya gelap, tulisannya terasa besar sekali."], [36.4, 40.62, "Tiap layar punya headphone sendiri, jadi suaranya tidak bertabrakan."], [41.8, 46.16, "Di Zona C, mock-up produknya ada tepat di depan layar animasinya."], [47.0, 50.85, "Jadi bisa membandingkan bentuk asli dan versi tiga dimensinya."], [52.2, 54.72, "Sebelum pulang, ambil minum dulu."], [55.4, 59.67, "Dua belas karya, sekitar dua puluh lima menit. Seru juga."]], event: [[3.0, 7.96, "Operator K3: Zona A, aman. Zona B, aman. Zona C, aman. Proyektor siap."], [10.8, 16.4, "PJ Kelompok 4: Oke teman-teman, tiga puluh menit lagi tamu datang. Semua ke posisi masing-masing, ya."], [24.6, 29.32, "Panitia: Selamat malam. Silakan isi buku tamu dulu, minumannya di sebelah kanan."], [30.8, 36.02, "Panitia K1: Scan kode QR ini untuk membuka katalog digital. Semua dua belas karya ada di sini."], [37.0, 41.77, "Panitia K1: Tiap karya punya halaman sendiri: video, keterangan, dan harga lisensi."], [47.6, 53.93, "MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak."], [54.6, 61.28, "Ketua panitia: Terima kasih atas kehadirannya. Pameran ini hasil kerja tujuh belas mahasiswa dalam empat kelompok."], [61.6, 67.57, "Kurator: Dua belas karya ini lahir dari empat produk. Satu produk, tiga cara bercerita."], [69.0, 72.82, "MC: Mari kita resmikan bersama. Hitung mundur dari tiga."], [73.6, 74.28, "MC: Tiga!"], [74.6, 75.24, "MC: Dua!"], [75.6, 76.35, "MC: Satu!"], [80.6, 84.65, "Kelompok 2: Halo semuanya, kami siaran langsung dari pembukaan pameran Render!"], [86.4, 89.96, "Kelompok 2: Jangan lupa ikuti akunnya dan bagikan ke teman kalian, ya."], [93.0, 96.06, "MC: Silakan menuju Zona B untuk screening showreel."], [106.6, 110.31, "Moderator: Kita mulai artist talk. Kelompok Satu, silakan."], [110.21, 117.26, "Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi."], [118.6, 120.88, "Moderator: Terima kasih. Kelompok Dua."], [120.78, 126.07, "Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi."], [129.8, 130.98, "Moderator: Kelompok Tiga."], [131.2, 136.36, "Kelompok 3: Untuk Sepatu Arunika, kami fokus pada gerak lari, dari video sampai turntable."], [140.4, 141.61, "Moderator: Kelompok Empat."], [141.8, 145.97, "Kelompok 4: Embun memakai exploded view, supaya isi botolnya terlihat jelas."], [147.0, 150.01, "Penanya: Berapa lama proses render animasi tiga dimensinya?"], [150.4, 153.65, "Kelompok 2: Sekitar dua hari, untuk dua puluh detik animasi."], [154.8, 158.38, "MC: Silakan berkeliling. Live render dimulai di Zona C."], [161.0, 166.44, "Kelompok 3: Ini model botol Embun. Kita render langsung, satu frame sekitar tiga puluh detik."], [172.6, 177.64, "Panitia K1: Setiap label memuat kelompok, judul, durasi, format, dan harga lisensi."], [179.4, 182.23, "Pengunjung: Saya tertarik lisensi iklan Krispi Box."], [182.6, 186.6, "Panitia K1: Minatnya sudah tercatat. Kami tempel titik merah di labelnya."], [188.0, 190.41, "Fotografer: Panitia, merapat! Foto bersama!"], [193.8, 195.28, "Fotografer: Satu, dua, tiga!"], [204.6, 208.98, "Kelompok 2: Setelah acara, kami unggah foto, reels, dan rangkuman malam ini."], [210.2, 213.82, "Kelompok 2: Setiap unggahan mengajak orang datang, dan menautkan katalog."], [217.0, 223.46, "MC: Terima kasih. Pameran dibuka untuk umum mulai besok, pukul sepuluh pagi. Selamat malam."]] };
 const SUBS = SUBS_ALL[MODE];
 const capEl = document.getElementById("cap"), capEb = document.getElementById("capEb"), capT = document.getElementById("capT"), capS = document.getElementById("capS");
 const titleEl = document.getElementById("title"), tcEl = document.getElementById("tc"), barEl = document.getElementById("bar");
@@ -931,47 +964,102 @@ function drawStandby(a, t) {
 }
 const pad = n => String(n).padStart(2, "0");
 
-function renderAt(t) {
-  t = Math.max(0, Math.min(DUR, t));
+const INS = [
+  { a: 30, b: 42, base: 29.99, id: "katalog" },
+  { a: 80, b: 92, base: 67.99, id: "live" },
+  { a: 172, b: 186, base: 147.99, id: "label" },
+  { a: 204, b: 216, base: 165.99, id: "feed" },
+];
+function baseT(t) {
+  if (MODE !== "event") return t;
+  let off = 0;
+  for (const s of INS) { if (t >= s.a && t < s.b) return s.base; if (t >= s.b) off += s.b - s.a; }
+  return t - off;
+}
+const insAt = t => MODE === "event" ? INS.find(s => t >= s.a && t < s.b) : null;
+const INS_CAPS = {
+  katalog: ["18.40 · Katalog digital", "Scan QR di meja registrasi", "Katalog memuat 12 karya, video, dan harga lisensi", C.green],
+  live: ["19.12 · Media sosial", "Live Instagram saat peresmian", "Kelompok 2 menyiarkan dan mengunggah cuplikan", C.vm],
+  label: ["20.25 · Label karya & QR", "Label: kelompok, judul, durasi, format, harga", "Scan QR label → halaman karya → ajukan minat lisensi", C.mg],
+  feed: ["21.10 · Pemasaran digital", "Unggahan setelah acara", "Foto bersama, reels, dan ajakan berkunjung 13–19 Des", C.vm],
+};
+function insCam(ins, t) {
+  const l = (t - ins.a) / (ins.b - ins.a);
+  const S = {
+    katalog: [V(2.75, 1.36, 3.62), V(2.95, 1.3, 3.85), V(3.35, 1.12, 4.39), V(3.35, 1.1, 4.39), 34],
+    live: [V(1.6, 2.2, 4.4), V(1.0, 2.1, 4.0), V(-5.5, 1.5, -.6), V(-6.2, 1.5, -.4), 58],
+    label: [V(-8.32, 1.36, tvZ[1] + 1.0), V(-8.47, 1.34, tvZ[1] + .93), V(-8.98, 1.35, tvZ[1] + .93), V(-8.98, 1.34, tvZ[1] + .91), 32],
+    feed: [V(0, 1.75, 14.0), V(0, 1.75, 13.8), V(0, 1.55, 8.6), V(0, 1.55, 8.6), 50],
+  }[ins.id];
+  _p.lerpVectors(S[0], S[1], l); _l.lerpVectors(S[2], S[3], l);
+  return { pos: _p, look: _l, fov: S[4] };
+}
+function applyWorld(tb, t) {
   for (const a of animTex) {
-    if (MODE === "event" && !a.noStandby && (t < a.onAt || t >= a.offAt)) drawStandby(a, t); else a.draw(a.g, a.c.width, a.c.height, t);
+    const tt = a.useBase ? tb : t;
+    if (MODE === "event" && !a.noStandby && (tb < a.onAt || tb >= a.offAt)) drawStandby(a, tb); else a.draw(a.g, a.c.width, a.c.height, tt);
     a.t.needsUpdate = true;
   }
   if (MODE === "event") {
-    const lf = t < 18 ? 1 : t < EVT.P ? .5 : t < 170 ? Math.min(1, .5 + (t - EVT.P) * .5) : Math.max(.25, 1 - (t - 170) * .15);
+    const lf = tb < 18 ? 1 : tb < EVT.P ? .5 : tb < 170 ? Math.min(1, .5 + (tb - EVT.P) * .5) : Math.max(.25, 1 - (tb - 170) * .15);
     ptLights.forEach(l => l.intensity = l.userData.base * lf);
-    timed.forEach(([o, a0, a1]) => o.visible = t >= a0 && t < a1);
+    timed.forEach(([o, a0, a1]) => o.visible = tb >= a0 && tb < a1);
     arrivals.forEach(ar => {
-      const d = Math.max(0, t - ar.start) * 1.25;
+      const d = Math.max(0, tb - ar.start) * 1.25;
       let rem = d, pos = ar.path[0], dir = [0, -1], moving = false;
       for (let k = 0; k < ar.path.length - 1; k++) {
         const A = ar.path[k], B = ar.path[k + 1], L = Math.hypot(B[0] - A[0], B[1] - A[1]);
         if (rem <= L) { const f = rem / L; pos = [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f]; dir = [B[0] - A[0], B[1] - A[1]]; moving = d > 0; break; }
         rem -= L; pos = B;
       }
-      ar.g.position.set(pos[0], moving ? Math.abs(Math.sin(t * 7)) * .02 : 0, pos[1]);
+      ar.g.position.set(pos[0], moving ? Math.abs(Math.sin(tb * 7)) * .02 : 0, pos[1]);
       ar.g.rotation.y = moving ? Math.atan2(dir[0], dir[1]) : ar.face;
     });
+    redDot.visible = t >= 184.2;
   }
   bottles.forEach((b, i) => b.rotation.y = t * (.6 + i * .1));
   walkers.forEach(w => {
-    const [x, z] = w.f(t), [x2, z2] = w.f(t + .05);
-    w.g.position.set(x, Math.abs(Math.sin(t * 7)) * .02, z); w.g.rotation.y = Math.atan2(x2 - x, z2 - z);
+    const [x, z] = w.f(tb), [x2, z2] = w.f(tb + .05);
+    w.g.position.set(x, Math.abs(Math.sin(tb * 7)) * .02, z); w.g.rotation.y = Math.atan2(x2 - x, z2 - z);
   });
+}
+// cuplikan untuk feed media sosial: dirender sekali dari momen-momen acara
+const snaps = {};
+function makeSnaps() {
+  const list = { countdown: 33.5, peresmian: 66.5, screening: 76, talk: 100, render: 143, foto: 157.25, gate: 21, briefing: 14 };
+  for (const [k, tb] of Object.entries(list)) {
+    applyWorld(tb, tb);
+    const cam = camAt(tb); camera.position.copy(cam.pos); camera.lookAt(cam.look); camera.fov = cam.fov; camera.updateProjectionMatrix();
+    ceiling.visible = camera.position.y < 3.4;
+    renderer.render(scene, camera);
+    const c = document.createElement("canvas"); c.width = 360; c.height = 360;
+    const src = renderer.domElement, sz = Math.min(src.width, src.height);
+    c.getContext("2d").drawImage(src, (src.width - sz) / 2, (src.height - sz) / 2, sz, sz, 0, 0, 360, 360);
+    snaps[k] = c;
+  }
+}
+function renderAt(t) {
+  t = Math.max(0, Math.min(DUR, t));
+  const ins = insAt(t);
+  if (ins && ins.id === "feed" && !snaps.foto) makeSnaps();
+  const tb = baseT(t);
+  applyWorld(tb, t);
   const u = t / DUR;
-  const cam = camAt(t);
+  const cam = ins ? insCam(ins, t) : camAt(tb);
   camera.position.copy(cam.pos);
   camera.lookAt(cam.look);
   if (Math.abs(camera.fov - cam.fov) > .01) { camera.fov = cam.fov; camera.updateProjectionMatrix(); }
   ceiling.visible = camera.position.y < 3.4;
   const cl = v => Math.max(0, Math.min(1, v));
   titleEl.style.opacity = cl((2.4 - t) / .5);
-  let ci = caps.findIndex(c => t >= c[0] && t < c[1]);
-  capEl.style.opacity = ci < 0 ? 0 : cl(Math.min((t - caps[ci][0]) / .35, (caps[ci][1] - t) / .35, 1));
-  if (MODE === "event") updateRundown(t);
-  if (ci >= 0 && ci === caps.length - 1) capEl.style.opacity = cl((t - caps[ci][0]) / .35);
-  if (ci >= 0 && ci !== lastCap) { const c = caps[ci]; capEb.textContent = c[2]; capT.textContent = c[3]; capS.textContent = c[4]; capEl.style.setProperty("--c", c[5]); lastCap = ci; }
-  // overlay per mode
+  const tc = MODE === "event" ? tb : t;
+  let ci = caps.findIndex(c => tc >= c[0] && tc < c[1]);
+  let capData = ci >= 0 ? caps[ci] : null, capKey = ci;
+  if (ins) { const c = INS_CAPS[ins.id]; capData = [ins.a, ins.b, ...c]; capKey = "i" + ins.id; }
+  capEl.style.opacity = !capData ? 0 : ins ? cl(Math.min((t - ins.a) / .35, (ins.b - t) / .35, 1)) : cl(Math.min((tc - capData[0]) / .35, (capData[1] - tc) / .35, 1));
+  if (MODE === "event") updateRundown(tb);
+  if (!ins && ci >= 0 && ci === caps.length - 1) capEl.style.opacity = cl((tc - caps[ci][0]) / .35);
+  if (capData && capKey !== lastCap) { capEb.textContent = capData[2]; capT.textContent = capData[3]; capS.textContent = capData[4]; capEl.style.setProperty("--c", capData[5]); lastCap = capKey; }
   const win = (a, b, r = .35) => cl(Math.min((t - a) / r, (b - t) / r, 1));
   if (MODE === "pov") {
     const ph = win(9.6, 13.2, .5);
@@ -982,10 +1070,11 @@ function renderAt(t) {
     fadeEl.style.opacity = cl((t - 57.6) / 1.2);
   }
   if (MODE === "event") {
-    let fl = 0; for (const ft of EVT.flash) fl = Math.max(fl, cl(1 - Math.abs(t - ft) / .12));
+    let fl = 0; for (const ft of EVT.flash) fl = Math.max(fl, ins ? 0 : cl(1 - Math.abs(tb - ft) / .12));
     flashEl.style.opacity = fl * .9;
     fadeT.textContent = "Terima kasih"; fadeS.textContent = "Pameran dibuka untuk umum 13–19 Desember · 10.00–21.00";
-    fadeEl.style.opacity = cl((t - 176.5) / 1.2);
+    fadeEl.style.opacity = cl((t - 226.5) / 1.2);
+    dimEl.style.opacity = ins && ins.id === "feed" ? win(ins.a, ins.b, .5) : 0;
   }
   const sb = SUBS.find(x => t >= x[0] && t < x[1]);
   subT.textContent = sb ? sb[2] : ""; subEl.style.opacity = sb ? 1 : 0;
@@ -993,6 +1082,137 @@ function renderAt(t) {
   tcEl.textContent = `00:${pad(Math.floor(f / FPS / 60))}:${pad(Math.floor(f / FPS) % 60)}:${pad(f % FPS)}`;
   barEl.style.width = (u * 100) + "%";
   renderer.render(scene, camera);
+  if (MODE === "event") drawPhone(t, ins);
+}
+const ph2 = document.getElementById("ph2"), pg2 = ph2.getContext("2d"), dimEl = document.getElementById("dim");
+function liveFeed(g, x, y, w, h) {
+  const src = renderer.domElement, sh = src.height, sw = sh * w / h;
+  g.drawImage(src, (src.width - sw) / 2, 0, sw, sh, x, y, w, h);
+}
+function rr2(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function phoneHeader(g, title, sub) {
+  g.fillStyle = "#f4f4f0"; g.fillRect(0, 0, 540, 1080);
+  g.fillStyle = "#0e1018"; g.fillRect(0, 0, 540, 150);
+  g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.fillText(title, 32, 86);
+  g.fillStyle = "#a3aac2"; g.font = `400 20px ${FM}`; g.fillText(sub, 34, 124);
+}
+const PRICES = { vm: PRICE_VM, mg: "Rp 4.000.000", td: "Rp 6.000.000" };
+function drawPhone(t, ins) {
+  const show = ins && ins.id !== "feed" ? (ins.id === "katalog" ? (t >= 32.6) : ins.id === "label" ? (t >= 177.2 && t < 184) : true) : ins && ins.id === "feed";
+  const rise = !ins ? 0 : Math.max(0, Math.min(1, Math.min((t - (ins.id === "katalog" ? 32.6 : ins.id === "label" ? 177.2 : ins.a)) / .45, ((ins.id === "label" ? 184 : ins.b) - t) / .4)));
+  ph2.style.opacity = show ? rise : 0;
+  ph2.style.transform = `translateY(${(1 - rise) * 40}px)`;
+  if (ins && ins.id === "feed") { ph2.style.right = "calc(50% - 126px)"; ph2.style.bottom = "14%"; } else { ph2.style.right = "7%"; ph2.style.bottom = "14%"; }
+  if (!show) return;
+  const g = pg2; g.save(); g.textAlign = "left"; g.textBaseline = "alphabetic";
+  if (ins.id === "katalog" && t < 35.2 || ins.id === "label" && t < 179.0) {
+    liveFeed(g, 0, 0, 540, 1080);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(0, 0, 540, 140); g.fillRect(0, 900, 540, 180);
+    g.fillStyle = "#fff"; g.font = `600 26px ${FB}`; g.fillText("Pindai kode QR", 150, 90);
+    const fx = 100, fy = 330, fs = 340; g.strokeStyle = "#ffd166"; g.lineWidth = 8;
+    for (const [cx, cy, dx, dy] of [[fx, fy, 1, 1], [fx + fs, fy, -1, 1], [fx, fy + fs, 1, -1], [fx + fs, fy + fs, -1, -1]]) { g.beginPath(); g.moveTo(cx, cy + dy * 60); g.lineTo(cx, cy); g.lineTo(cx + dx * 60, cy); g.stroke(); }
+    const ly = fy + ((t * 1.4) % 1) * fs; g.fillStyle = "rgba(255,209,102,.7)"; g.fillRect(fx + 10, ly, fs - 20, 4);
+    const done = ins.id === "katalog" ? t > 34.9 : t > 178.7;
+    g.fillStyle = "#fff"; g.font = `400 22px ${FM}`; g.fillText(done ? "TERDETEKSI · membuka…" : "Arahkan kamera ke QR", 110, 990);
+    g.restore(); return;
+  }
+  if (ins.id === "katalog") {
+    if (t < 38.6) {
+      phoneHeader(g, "RENDER", "KATALOG DIGITAL · 12 KARYA");
+      const tabs = ["Zona A", "Zona B", "Zona C"]; tabs.forEach((x, i) => { g.fillStyle = i === 0 ? "#0e1018" : "#e2e4ec"; rr2(g, 32 + i * 160, 176, 148, 52, 26); g.fill(); g.fillStyle = i === 0 ? "#fff" : "#141726"; g.font = `600 22px ${FB}`; g.fillText(x, 62 + i * 160, 210); });
+      const scroll = Math.max(0, (t - 36.4) * 120);
+      const items = []; BR.forEach((b, i) => items.push([b, VM[i][0], "Video marketing · 0:30", PRICE_VM[i]]));
+      BR.forEach((b, i) => items.push([b, MG[i][0], "Motion graphic · 0:20", PRICES.mg])); BR.forEach((b, i) => items.push([b, TD[i][0], "Animasi 3D", PRICES.td]));
+      g.save(); g.beginPath(); g.rect(0, 250, 540, 830); g.clip();
+      items.forEach(([b, ti, me, pr], i) => {
+        const y = 262 + i * 150 - scroll; if (y < 140 || y > 1080) return;
+        g.fillStyle = "#fff"; rr2(g, 24, y, 492, 134, 16); g.fill();
+        const gr = g.createLinearGradient(40, 0, 160, 0); gr.addColorStop(0, b.col); gr.addColorStop(1, "#0e1018"); g.fillStyle = gr; rr2(g, 40, y + 16, 120, 102, 12); g.fill();
+        g.fillStyle = "#fff"; g.font = `800 14px ${FD}`; g.fillText(b.name.split(" ")[0].toUpperCase(), 50, y + 104);
+        g.fillStyle = "#141726"; g.font = `700 24px ${FB}`; g.fillText(ti, 180, y + 52);
+        g.fillStyle = "#5a6078"; g.font = `400 18px ${FM}`; g.fillText(`K${b.k} · ${me}`, 180, y + 84); g.fillText(pr, 180, y + 112);
+      });
+      g.restore();
+    } else {
+      phoneHeader(g, "Pagi di Lereng", "KELOMPOK 1 · KOPI LERENG");
+      const gr = g.createLinearGradient(0, 150, 0, 520); gr.addColorStop(0, "#f7b267"); gr.addColorStop(1, "#7a3e1d"); g.fillStyle = gr; g.fillRect(0, 150, 540, 370);
+      g.fillStyle = "#3b2415"; g.beginPath(); g.moveTo(0, 520); g.lineTo(0, 430); g.lineTo(160, 370); g.lineTo(300, 440); g.lineTo(540, 380); g.lineTo(540, 520); g.fill();
+      g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.arc(270, 335, 52, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(252, 305); g.lineTo(252, 365); g.lineTo(302, 335); g.fill();
+      const rows = [["Disiplin", "Video marketing"], ["Durasi", "00:00:30:00"], ["Format", "1920×1080 · stereo"], ["Zona", "A · layar 1"]];
+      rows.forEach(([k, v], i) => { g.fillStyle = "#5a6078"; g.font = `400 20px ${FM}`; g.fillText(k.toUpperCase(), 32, 580 + i * 50); g.fillStyle = "#141726"; g.font = `600 24px ${FB}`; g.fillText(v, 210, 580 + i * 50); });
+      g.fillStyle = "#141726"; g.font = `800 34px ${FD}`; g.fillText("Rp 7.500.000", 32, 820);
+      g.fillStyle = "#5a6078"; g.font = `400 20px ${FM}`; g.fillText("LISENSI PENGGUNAAN 1 TAHUN", 34, 856);
+      const press = t > 39.2 && t < 39.6;
+      g.fillStyle = press ? "#3a2a8c" : "#5b3fc4"; rr2(g, 32, 900, 476, 84, 42); g.fill();
+      g.fillStyle = "#fff"; g.font = `700 26px ${FB}`; g.textAlign = "center"; g.fillText("Tonton video karya", 270, 952); g.textAlign = "left";
+    }
+    g.restore(); return;
+  }
+  if (ins.id === "label") {
+    phoneHeader(g, "Krispi Box", "KELOMPOK 2 · VIDEO MARKETING");
+    g.fillStyle = "#e0402a"; g.fillRect(0, 150, 540, 330);
+    for (let i = 0; i < 6; i++) { const bo = Math.abs(Math.sin(t * 3 + i)) * 30; g.fillStyle = i % 2 ? "#ffcc4d" : "#ff9f1c"; g.beginPath(); g.ellipse(70 + i * 80, 400 - bo, 30, 24, 0, 0, 7); g.fill(); }
+    g.fillStyle = "#fff"; g.font = `800 40px ${FD}`; g.fillText("KRISPI BOX", 32, 230);
+    const rows = [["Durasi", "00:00:30:00"], ["Format", "1080×1920 · 9:16"], ["Klien", "Krispi Box (fiktif)"]];
+    rows.forEach(([k, v], i) => { g.fillStyle = "#5a6078"; g.font = `400 20px ${FM}`; g.fillText(k.toUpperCase(), 32, 540 + i * 50); g.fillStyle = "#141726"; g.font = `600 24px ${FB}`; g.fillText(v, 200, 540 + i * 50); });
+    g.fillStyle = "#141726"; g.font = `800 34px ${FD}`; g.fillText("Rp 5.000.000", 32, 740);
+    g.fillStyle = "#5a6078"; g.font = `400 20px ${FM}`; g.fillText("LISENSI PENGGUNAAN 1 TAHUN", 34, 776);
+    const sent = t > 181.4;
+    g.fillStyle = sent ? "#276b43" : "#b83a20"; rr2(g, 32, 820, 476, 84, 42); g.fill();
+    g.fillStyle = "#fff"; g.font = `700 26px ${FB}`; g.textAlign = "center"; g.fillText(sent ? "Minat terkirim ✓" : "Ajukan minat lisensi", 270, 872); g.textAlign = "left";
+    if (sent) { g.fillStyle = "#141726"; rr2(g, 32, 930, 476, 110, 18); g.fill(); g.fillStyle = "#fff"; g.font = `600 22px ${FB}`; g.fillText("Panitia K1 akan menghubungi", 56, 975); g.fillStyle = "#a3aac2"; g.font = `400 18px ${FM}`; g.fillText("dalam 1×24 jam · titik merah dipasang", 56, 1012); }
+    g.restore(); return;
+  }
+  if (ins.id === "live") {
+    liveFeed(g, 0, 0, 540, 1080);
+    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(0, 0, 540, 120);
+    g.fillStyle = "#e0272f"; rr2(g, 24, 36, 96, 44, 8); g.fill(); g.fillStyle = "#fff"; g.font = `800 22px ${FD}`; g.fillText("LIVE", 38, 67);
+    const viewers = Math.floor(48 + (t - 80) * 17);
+    g.fillStyle = "rgba(0,0,0,.45)"; rr2(g, 132, 36, 170, 44, 8); g.fill(); g.fillStyle = "#fff"; g.font = `600 20px ${FB}`; g.fillText(`${viewers} menonton`, 146, 66);
+    g.font = `700 22px ${FB}`; g.fillText("@render.pameran", 330, 66);
+    const cm = [["dosen.dkv", "Selamat, keren sekali!"], ["nadia_k", "Krispi Box mantap"], ["umkm.kopi", "Kopi Lereng tampil!"], ["teman_kampus", "Kapan dibuka umum?"], ["render.pameran", "13–19 Des, 10.00–21.00"], ["rafly", "Cek katalog di bio ya"]];
+    const shown = Math.min(cm.length, Math.floor((t - 82.8) / 1.25) + 1);
+    for (let i = 0; i < shown; i++) {
+      const y = 1040 - (shown - 1 - i) * 74; if (y < 620) continue;
+      g.fillStyle = "rgba(0,0,0,.42)"; rr2(g, 24, y - 54, 420, 64, 14); g.fill();
+      g.fillStyle = "#ffd166"; g.font = `700 19px ${FB}`; g.fillText(cm[i][0], 40, y - 28); g.fillStyle = "#fff"; g.font = `400 20px ${FB}`; g.fillText(cm[i][1], 40, y - 4);
+    }
+    for (let k = 0; k < 6; k++) { const ph = ((t - 80) * .6 + k * .17) % 1; g.globalAlpha = 1 - ph; g.fillStyle = ["#ff6b8b", "#ffd166", "#a58cff"][k % 3]; g.beginPath(); g.arc(480 + Math.sin(k * 2 + t * 3) * 18, 1000 - ph * 420, 14, 0, 7); g.fill(); }
+    g.globalAlpha = 1; g.restore(); return;
+  }
+  // feed
+  g.fillStyle = "#fbfbf8"; g.fillRect(0, 0, 540, 1080);
+  if (t < 209.4) {
+    g.fillStyle = "#141726"; g.font = `700 26px ${FB}`; g.fillText("@render.pameran", 32, 62);
+    const avg = g.createLinearGradient(32, 90, 152, 210); avg.addColorStop(0, "#d9472a"); avg.addColorStop(.5, "#6d4fd8"); avg.addColorStop(1, "#0f86b8");
+    g.fillStyle = avg; g.beginPath(); g.arc(92, 150, 58, 0, 7); g.fill(); g.fillStyle = "#0e1018"; g.beginPath(); g.arc(92, 150, 50, 0, 7); g.fill();
+    g.fillStyle = "#fff"; g.font = `800 20px ${FD}`; g.textAlign = "center"; g.fillText("R", 92, 158);
+    const stats = [["24", "postingan"], ["1.208", "pengikut"], ["16", "mengikuti"]];
+    stats.forEach(([n, l], i) => { g.fillStyle = "#141726"; g.font = `800 26px ${FD}`; g.fillText(n, 250 + i * 110, 146); g.fillStyle = "#5a6078"; g.font = `400 16px ${FB}`; g.fillText(l, 250 + i * 110, 172); });
+    g.textAlign = "left";
+    g.fillStyle = "#141726"; g.font = `700 20px ${FB}`; g.fillText("RENDER · Produk dalam Gerak", 32, 250);
+    g.fillStyle = "#5a6078"; g.font = `400 18px ${FB}`; g.fillText("Pameran 12 karya · 13–19 Des · katalog di tautan", 32, 280);
+    const tiles = ["foto", "talk", "peresmian", "countdown", "screening", "render", "gate", "briefing", "poster"];
+    const appear = Math.floor((t - 204.4) / .35);
+    tiles.forEach((k, i) => {
+      const x = (i % 3) * 180, y = 310 + Math.floor(i / 3) * 180;
+      if (i > appear) { g.fillStyle = "#e6e8f0"; g.fillRect(x + 2, y + 2, 176, 176); return; }
+      if (snaps[k]) g.drawImage(snaps[k], x + 2, y + 2, 176, 176);
+      else { g.fillStyle = "#0e1018"; g.fillRect(x + 2, y + 2, 176, 176); g.fillStyle = "#fff"; g.font = `800 26px ${FD}`; g.fillText("RENDER", x + 20, y + 100); }
+      if (k === "talk" || k === "screening") { g.fillStyle = "#fff"; g.beginPath(); g.moveTo(x + 150, y + 16); g.lineTo(x + 150, y + 40); g.lineTo(x + 168, y + 28); g.fill(); }
+    });
+    g.fillStyle = "#5a6078"; g.font = `400 16px ${FM}`; g.fillText("ANGKA DI LAYAR INI CONTOH", 32, 880);
+  } else {
+    g.fillStyle = "#141726"; g.font = `700 24px ${FB}`; g.fillText("@render.pameran", 32, 60);
+    if (snaps.foto) g.drawImage(snaps.foto, 0, 90, 540, 540);
+    const likes = Math.floor(240 + (t - 209.4) * 140);
+    g.fillStyle = "#e0272f"; g.beginPath(); g.arc(46, 672, 16, 0, 7); g.fill();
+    g.fillStyle = "#141726"; g.font = `700 24px ${FB}`; g.fillText(`${likes.toLocaleString("id-ID")} suka`, 76, 681);
+    const cap = ["Terima kasih untuk semua tamu malam ini!", "12 karya dari 4 kelompok, dibuka untuk umum", "13–19 Desember, pukul 10.00–21.00.", "Katalog lengkap di tautan bio.", "#RenderProdukDalamGerak #PameranKampus"];
+    cap.forEach((l, i) => { g.fillStyle = i === 4 ? "#3355d6" : "#141726"; g.font = `${i === 0 ? 700 : 400} 21px ${FB}`; g.fillText(l, 32, 730 + i * 34); });
+    g.fillStyle = "#5a6078"; g.font = `400 16px ${FM}`; g.fillText("ANGKA DI LAYAR INI CONTOH", 32, 930);
+  }
+  g.restore();
 }
 
 document.getElementById("loading").remove();

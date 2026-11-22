@@ -11,94 +11,130 @@ PJ Kelompok 4: Oke teman-teman, tiga puluh menit lagi tamu datang. Semua ke posi
 Panitia: Selamat malam. Silakan isi buku tamu dulu, minumannya di sebelah kanan.
 
 4
-00:00:35,600 --> 00:00:41,930
-MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak.
+00:00:30,800 --> 00:00:36,020
+Panitia K1: Scan kode QR ini untuk membuka katalog digital. Semua dua belas karya ada di sini.
 
 5
-00:00:42,600 --> 00:00:49,280
-Ketua panitia: Terima kasih atas kehadirannya. Pameran ini hasil kerja tujuh belas mahasiswa dalam empat kelompok.
+00:00:37,000 --> 00:00:41,770
+Panitia K1: Tiap karya punya halaman sendiri: video, keterangan, dan harga lisensi.
 
 6
-00:00:49,600 --> 00:00:55,570
-Kurator: Dua belas karya ini lahir dari empat produk. Satu produk, tiga cara bercerita.
+00:00:47,600 --> 00:00:53,930
+MC: Selamat malam, hadirin. Selamat datang di pembukaan pameran Render, Produk dalam Gerak.
 
 7
-00:00:57,000 --> 00:01:00,820
-MC: Mari kita resmikan bersama. Hitung mundur dari tiga.
+00:00:54,600 --> 00:01:01,280
+Ketua panitia: Terima kasih atas kehadirannya. Pameran ini hasil kerja tujuh belas mahasiswa dalam empat kelompok.
 
 8
-00:01:01,600 --> 00:01:02,280
-MC: Tiga!
+00:01:01,600 --> 00:01:07,570
+Kurator: Dua belas karya ini lahir dari empat produk. Satu produk, tiga cara bercerita.
 
 9
-00:01:02,600 --> 00:01:03,240
-MC: Dua!
+00:01:09,000 --> 00:01:12,820
+MC: Mari kita resmikan bersama. Hitung mundur dari tiga.
 
 10
-00:01:03,600 --> 00:01:04,350
-MC: Satu!
+00:01:13,600 --> 00:01:14,280
+MC: Tiga!
 
 11
-00:01:09,000 --> 00:01:12,060
-MC: Silakan menuju Zona B untuk screening showreel.
+00:01:14,600 --> 00:01:15,240
+MC: Dua!
 
 12
-00:01:22,600 --> 00:01:26,310
-Moderator: Kita mulai artist talk. Kelompok Satu, silakan.
+00:01:15,600 --> 00:01:16,350
+MC: Satu!
 
 13
-00:01:26,210 --> 00:01:33,260
-Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi.
+00:01:20,600 --> 00:01:24,650
+Kelompok 2: Halo semuanya, kami siaran langsung dari pembukaan pameran Render!
 
 14
-00:01:34,600 --> 00:01:36,880
-Moderator: Terima kasih. Kelompok Dua.
+00:01:26,400 --> 00:01:29,960
+Kelompok 2: Jangan lupa ikuti akunnya dan bagikan ke teman kalian, ya.
 
 15
-00:01:36,780 --> 00:01:42,070
-Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi.
+00:01:33,000 --> 00:01:36,060
+MC: Silakan menuju Zona B untuk screening showreel.
 
 16
-00:01:45,800 --> 00:01:46,980
-Moderator: Kelompok Tiga.
+00:01:46,600 --> 00:01:50,310
+Moderator: Kita mulai artist talk. Kelompok Satu, silakan.
 
 17
-00:01:47,200 --> 00:01:52,360
-Kelompok 3: Untuk Sepatu Arunika, kami fokus pada gerak lari, dari video sampai turntable.
+00:01:50,210 --> 00:01:57,260
+Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi.
 
 18
-00:01:56,400 --> 00:01:57,610
-Moderator: Kelompok Empat.
+00:01:58,600 --> 00:02:00,880
+Moderator: Terima kasih. Kelompok Dua.
 
 19
-00:01:57,800 --> 00:02:01,970
-Kelompok 4: Embun memakai exploded view, supaya isi botolnya terlihat jelas.
+00:02:00,780 --> 00:02:06,070
+Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru masuk ke render tiga dimensi.
 
 20
-00:02:03,000 --> 00:02:06,010
-Penanya: Berapa lama proses render animasi tiga dimensinya?
+00:02:09,800 --> 00:02:10,980
+Moderator: Kelompok Tiga.
 
 21
-00:02:06,400 --> 00:02:09,650
-Kelompok 2: Sekitar dua hari, untuk dua puluh detik animasi.
+00:02:11,200 --> 00:02:16,360
+Kelompok 3: Untuk Sepatu Arunika, kami fokus pada gerak lari, dari video sampai turntable.
 
 22
-00:02:10,800 --> 00:02:14,380
-MC: Silakan berkeliling. Live render dimulai di Zona C.
+00:02:20,400 --> 00:02:21,610
+Moderator: Kelompok Empat.
 
 23
-00:02:17,000 --> 00:02:22,440
-Kelompok 3: Ini model botol Embun. Kita render langsung, satu frame sekitar tiga puluh detik.
+00:02:21,800 --> 00:02:25,970
+Kelompok 4: Embun memakai exploded view, supaya isi botolnya terlihat jelas.
 
 24
-00:02:30,000 --> 00:02:32,410
-Fotografer: Panitia, merapat! Foto bersama!
+00:02:27,000 --> 00:02:30,010
+Penanya: Berapa lama proses render animasi tiga dimensinya?
 
 25
-00:02:35,800 --> 00:02:37,280
-Fotografer: Satu, dua, tiga!
+00:02:30,400 --> 00:02:33,650
+Kelompok 2: Sekitar dua hari, untuk dua puluh detik animasi.
 
 26
-00:02:47,000 --> 00:02:53,460
+00:02:34,800 --> 00:02:38,380
+MC: Silakan berkeliling. Live render dimulai di Zona C.
+
+27
+00:02:41,000 --> 00:02:46,440
+Kelompok 3: Ini model botol Embun. Kita render langsung, satu frame sekitar tiga puluh detik.
+
+28
+00:02:52,600 --> 00:02:57,640
+Panitia K1: Setiap label memuat kelompok, judul, durasi, format, dan harga lisensi.
+
+29
+00:02:59,400 --> 00:03:02,230
+Pengunjung: Saya tertarik lisensi iklan Krispi Box.
+
+30
+00:03:02,600 --> 00:03:06,600
+Panitia K1: Minatnya sudah tercatat. Kami tempel titik merah di labelnya.
+
+31
+00:03:08,000 --> 00:03:10,410
+Fotografer: Panitia, merapat! Foto bersama!
+
+32
+00:03:13,800 --> 00:03:15,280
+Fotografer: Satu, dua, tiga!
+
+33
+00:03:24,600 --> 00:03:28,980
+Kelompok 2: Setelah acara, kami unggah foto, reels, dan rangkuman malam ini.
+
+34
+00:03:30,200 --> 00:03:33,820
+Kelompok 2: Setiap unggahan mengajak orang datang, dan menautkan katalog.
+
+35
+00:03:37,000 --> 00:03:43,460
 MC: Terima kasih. Pameran dibuka untuk umum mulai besok, pukul sepuluh pagi. Selamat malam.
 
