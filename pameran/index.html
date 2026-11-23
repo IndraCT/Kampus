@@ -620,7 +620,7 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
 <!-- ============ SIMULASI ============ -->
 <section>
   <div class="sec-head">
-    <span class="eyebrow">Simulasi · 4 video · tur &amp; POV 1 menit, acara ±4 menit, persiapan 5 menit · narasi, subtitle &amp; musik</span>
+    <span class="eyebrow">Simulasi · 7 video · ruang dalam &amp; lapangan outdoor · narasi, subtitle &amp; musik</span>
     <h2>Simulasi ruang, acara &amp; persiapan</h2>
     <p class="lede">Tiga sudut pandang dari ruang yang sama. Semua isi layar, nama produk, dan suara adalah contoh, dan narasinya memakai suara sintetis.</p>
   </div>
@@ -630,6 +630,12 @@ footer { color: var(--muted); font-size: .86rem; border-top: 1px solid var(--lin
       <button type="button" role="tab" class="tab" id="tab-pov" data-v="pov" aria-selected="false">POV pengunjung</button>
       <button type="button" role="tab" class="tab" id="tab-event" data-v="event" aria-selected="false">Acara pembukaan</button>
       <button type="button" role="tab" class="tab" id="tab-setup" data-v="setup" aria-selected="false">Persiapan sampai bongkar</button>
+    </div>
+    <p class="eyebrow" style="margin-top:6px">Versi lapangan (outdoor)</p>
+    <div class="sim-tabs" role="tablist" aria-label="Pilih video simulasi versi lapangan">
+      <button type="button" role="tab" class="tab" id="tab-lap-acara" data-v="lapAcara" aria-selected="false">Lapangan · Acara</button>
+      <button type="button" role="tab" class="tab" id="tab-lap-persiapan" data-v="lapPersiapan" aria-selected="false">Lapangan · Persiapan</button>
+      <button type="button" role="tab" class="tab" id="tab-lap-pov" data-v="lapPov" aria-selected="false">Lapangan · POV</button>
     </div>
     <p class="sim-desc" id="simDesc"></p>
     <video id="simVideo" controls playsinline preload="metadata" poster="simulasi-poster.jpg" src="simulasi-pameran.mp4"></video>
@@ -1203,6 +1209,9 @@ updateProgress();
 
 /* ---------- SIMULASI 3D ---------- */
 const SIMV = {
+  lapAcara: ["simulasi-lapangan-acara.mp4", "simulasi-lapangan-acara-poster.jpg", "Versi outdoor, 3 menit: tech check genset dan videotron, briefing di plaza, gate dibuka dari parkir, scan QR di tenda registrasi, pembukaan dan peresmian di panggung, showreel di videotron, artist talk 4 kelompok, tur tenda Zona A/B/C dengan live Instagram, foto bersama, dan penutupan.", "simulasi-lapangan.html#event"],
+  lapPersiapan: ["simulasi-lapangan-persiapan.mp4", "simulasi-lapangan-persiapan-poster.jpg", "Versi outdoor, 4 menit time-lapse: lapangan kosong, genset dan kabel, tenda berdiri, panggung dan videotron, tenda blackout Zona B, isi tenda, gate dan kursi, tiang lampu, gladi, acara, pameran harian, bongkar, lapangan diserahkan.", "simulasi-lapangan.html#setup"],
+  lapPov: ["simulasi-lapangan-pov.mp4", "simulasi-lapangan-pov-poster.jpg", "Versi outdoor, 1,5 menit dari mata pengunjung: parkir, gate, scan QR, headphone di tenda Zona A, videotron, tenda blackout Zona B, mock-up di Zona C, booth konsumsi, lalu pulang.", "simulasi-lapangan.html#pov"],
   setup: ["simulasi-persiapan.mp4", "simulasi-persiapan-poster.jpg", "Time-lapse 5 menit dari H-1 pukul 08.00: ruang kosong, pemasangan Zona B, A, C, area talk, gate dan totem, registrasi, uji putar, gladi bersih, pembukaan, pameran harian, lalu bongkar sampai ruang diserahkan kembali."],
   tour: ["simulasi-pameran.mp4", "simulasi-poster.jpg", "Kamera berkeliling dari gate, poster stand, totem, dan registrasi, lalu menyorot dari dekat 4 karya di setiap zona, lengkap dengan kartu judul, kelompok, dan durasi."],
   pov: ["simulasi-pov.mp4", "simulasi-pov-poster.jpg", "Dilihat dari mata pengunjung: scan QR di poster stand, isi buku tamu, memakai headphone di Zona A, masuk ruang proyeksi, melihat mock-up dan animasi 3D, lalu pulang."],
@@ -1215,12 +1224,12 @@ function setSim(m) {
   document.querySelectorAll(".sim-tabs .tab").forEach(b => b.setAttribute("aria-selected", b.dataset.v === m ? "true" : "false"));
   simVideo.pause(); simVideo.poster = SIMV[m][1]; simVideo.src = SIMV[m][0];
   document.getElementById("simDesc").textContent = SIMV[m][2];
-  if (!simFrame.hidden) simFrame.src = "simulasi.html#" + m;
+  if (!simFrame.hidden) simFrame.src = SIMV[m][3] || ("simulasi.html#" + m);
 }
 document.querySelectorAll(".sim-tabs .tab").forEach(b => b.addEventListener("click", () => setSim(b.dataset.v)));
 document.getElementById("simDesc").textContent = SIMV.tour[2];
 simBtn.addEventListener("click", () => {
-  if (simFrame.hidden) { simFrame.src = "simulasi.html#" + simMode; simFrame.hidden = false; simBtn.textContent = "Tutup versi 3D"; try { simVideo.pause(); } catch (err) {} }
+  if (simFrame.hidden) { simFrame.src = SIMV[simMode][3] || ("simulasi.html#" + simMode); simFrame.hidden = false; simBtn.textContent = "Tutup versi 3D"; try { simVideo.pause(); } catch (err) {} }
   else { simFrame.src = "about:blank"; simFrame.hidden = true; simBtn.textContent = "Buka versi 3D interaktif"; }
 });
 

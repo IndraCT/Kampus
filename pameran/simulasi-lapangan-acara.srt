@@ -1,0 +1,108 @@
+1
+00:00:03,000 --> 00:00:07,910
+Operator K3: Genset aman. Videotron, tenda A, tenda C, dan tenda B sudah menyala.
+
+2
+00:00:10,800 --> 00:00:17,090
+PJ Kelompok 4: Teman-teman, satu jam lagi gate dibuka. Cek posisi, dan siapkan jas hujan kalau cuaca berubah.
+
+3
+00:00:19,000 --> 00:00:22,440
+MC: Gate dibuka! Selamat datang di pameran Render.
+
+4
+00:00:25,200 --> 00:00:30,130
+Panitia: Selamat malam, silakan scan QR katalog dan isi buku tamu di tenda registrasi.
+
+5
+00:00:37,400 --> 00:00:43,730
+MC: Selamat malam, hadirin! Selamat datang di pembukaan pameran Render, di lapangan terbuka.
+
+6
+00:00:44,600 --> 00:00:49,950
+Ketua panitia: Terima kasih sudah datang. Malam ini dua belas karya dipamerkan di tiga tenda.
+
+7
+00:00:50,400 --> 00:00:56,210
+Kurator: Satu produk, tiga cara bercerita. Silakan nikmati karyanya di setiap tenda.
+
+8
+00:00:57,000 --> 00:01:00,770
+MC: Mari kita resmikan bersama. Hitung mundur dari tiga.
+
+9
+00:01:01,600 --> 00:01:02,280
+MC: Tiga!
+
+10
+00:01:02,600 --> 00:01:03,240
+MC: Dua!
+
+11
+00:01:03,600 --> 00:01:04,350
+MC: Satu!
+
+12
+00:01:09,000 --> 00:01:12,230
+MC: Saksikan showreel dua belas karya di videotron.
+
+13
+00:01:22,600 --> 00:01:26,310
+Moderator: Kita mulai artist talk. Kelompok Satu, silakan.
+
+14
+00:01:26,210 --> 00:01:33,030
+Kelompok 1: Kopi Lereng kami ceritakan lewat pagi yang pelan: live action, tipografi, lalu packshot tiga dimensi.
+
+15
+00:01:33,800 --> 00:01:34,890
+Moderator: Kelompok Dua.
+
+16
+00:01:35,000 --> 00:01:39,600
+Kelompok 2: Krispi Box dimulai dari brief, lalu storyboard, baru render tiga dimensi.
+
+17
+00:01:42,600 --> 00:01:43,780
+Moderator: Kelompok Tiga.
+
+18
+00:01:43,800 --> 00:01:47,930
+Kelompok 3: Sepatu Arunika fokus pada gerak lari, dari video sampai turntable.
+
+19
+00:01:50,400 --> 00:01:51,610
+Moderator: Kelompok Empat.
+
+20
+00:01:51,600 --> 00:01:55,390
+Kelompok 4: Embun memakai exploded view supaya isi botolnya terlihat jelas.
+
+21
+00:01:58,600 --> 00:02:02,130
+MC: Silakan berkeliling ke tenda Zona A, B, dan C.
+
+22
+00:02:04,600 --> 00:02:08,590
+Kelompok 2: Halo semuanya, kami siaran langsung dari pameran Render di lapangan!
+
+23
+00:02:12,800 --> 00:02:17,330
+Kelompok 3: Mock-up produk ada di depan layar animasinya, silakan dilihat dari dekat.
+
+24
+00:02:21,000 --> 00:02:23,820
+Fotografer: Panitia, naik ke panggung. Foto bersama!
+
+25
+00:02:26,600 --> 00:02:28,080
+Fotografer: Satu, dua, tiga!
+
+26
+00:02:39,000 --> 00:02:45,320
+MC: Terima kasih. Pameran dibuka untuk umum mulai besok pukul sepuluh pagi. Hati-hati di jalan.
+
+27
+00:02:48,600 --> 00:02:51,840
+Operator K3: Layar dimatikan. Genset dimatikan paling akhir.
+
